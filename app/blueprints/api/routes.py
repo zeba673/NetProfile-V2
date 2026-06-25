@@ -639,3 +639,14 @@ def get_casos_lista():
         "SELECT id, expediente, titulo FROM casos ORDER BY expediente"
     ).fetchall()
     return jsonify(rows_to_list(rows))
+
+
+@api_bp.route('/config', methods=['GET'])
+@login_required
+def get_config():
+    import os
+    return jsonify({
+        'supabase_url': os.environ.get('SUPABASE_URL', ''),
+        'supabase_key': os.environ.get('SUPABASE_ANON_KEY', '')
+    })
+

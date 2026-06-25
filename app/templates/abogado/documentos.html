@@ -133,6 +133,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 let docsData = [];
 
@@ -188,7 +189,7 @@ function renderDocs(docs) {
       <td style="text-align:right;">
         <div class="d-flex items-center justify-end gap-1">
           ${d.ruta_archivo ? `
-          <a class="btn btn-icon btn-sm" href="/static/${d.ruta_archivo}" target="_blank" download="${d.nombre_archivo}" title="Descargar archivo" style="color:var(--color-income-green);">
+          <a class="btn btn-icon btn-sm" href="${d.ruta_archivo.startsWith('http') ? d.ruta_archivo : '/static/' + d.ruta_archivo}" target="_blank" download="${d.nombre_archivo}" title="Descargar archivo" style="color:var(--color-income-green);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </a>` : ''}
           <button class="btn btn-icon btn-sm" onclick="toggleEstadoDoc(${d.id}, '${d.estado}')" title="Cambiar estado">
@@ -221,8 +222,48 @@ function actualizarRequeridos() {
 }
 
 // Hook into modal open or setup on change
-document.addEventListener('DOMContentLoaded', () => {
+let supabaseClient = null;
+
+async function initSupabase() {
+  try {
+    const response = await fetch('/api/config');
+    const config = await response.json();
+    if (config.supabase_url && config.supabase_key) {
+      supabaseClient = supabase.createClient(config.supabase_url, config.supabase_key);
+      console.log('Supabase Client inicializado para cargas directas.');
+    }
+  } catch (err) {
+    console.warn('No se pudo inicializar el cliente de Supabase (modo local activo):', err);
+  }
+}
+
+async function subirASupabase(file) {
+  if (!supabaseClient) {
+    throw new Error('Supabase no está inicializado.');
+  }
+  const fileExt = file.name.split('.').pop();
+  const cleanBase = file.name.replace(`.${fileExt}`, '').replace(/[^a-zA-Z0-9]/g, '_');
+  const uniqueName = `${cleanBase}_${Date.now()}.${fileExt.toLowerCase()}`;
+  const filePath = `uploads/${uniqueName}`;
+
+  const { data, error } = await supabaseClient.storage
+    .from('documentos')
+    .upload(filePath, file);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const { data: { publicUrl } } = supabaseClient.storage
+    .from('documentos')
+    .getPublicUrl(filePath);
+
+  return publicUrl;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   actualizarRequeridos();
+  await initSupabase();
   
   // Also hook into Modal.open to run it when opening the modal
   const origOpen = Modal.open;
@@ -249,8 +290,9 @@ async function crearDoc() {
     return;
   }
   
+  let file = null;
   if (fileInput.files && fileInput.files.length > 0) {
-    const file = fileInput.files[0];
+    file = fileInput.files[0];
     const maxSize = 16 * 1024 * 1024; // 16 MB
     if (file.size > maxSize) {
       Toast.error('Archivo demasiado grande', 'El tamaño del archivo no debe superar los 16 MB.');
@@ -258,19 +300,45 @@ async function crearDoc() {
     }
   }
   
-  const formData = new FormData(form);
   const btn = document.getElementById('btn-crear-doc');
   const orig = btn.innerHTML;
   setBtnLoading(btn, true);
 
   try {
-    const response = await fetch('/api/documentos', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
+    let response;
+    
+    // Si supabaseClient está activo y hay un archivo, lo subimos directo al Storage
+    if (supabaseClient && file) {
+      const publicUrl = await subirASupabase(file);
+      
+      const payload = {
+        nombre_archivo: document.getElementById('nombre-archivo-field').value || file.name,
+        ruta_archivo: publicUrl,
+        caso_id: form.querySelector('select[name="caso_id"]').value,
+        tipo_doc: form.querySelector('input[name="tipo_doc"]').value,
+        estado: estado,
+        notas: form.querySelector('textarea[name="notas"]').value
+      };
+      
+      response = await fetch('/api/documentos', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+    } else {
+      // Fallback local
+      const formData = new FormData(form);
+      response = await fetch('/api/documentos', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+    }
 
     let resp;
     const contentType = response.headers.get('content-type');
