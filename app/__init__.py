@@ -98,15 +98,35 @@ def get_db():
     """Obtiene la conexión a la base de datos para el contexto actual."""
     from flask import current_app
     if 'db' not in g:
-        # Check if environment variables for PostgreSQL are set
-        pg_host = os.environ.get('DB_HOST') or os.environ.get('POSTGRES_HOST')
-        if pg_host:
-            # Connect to PostgreSQL (Supabase)
-            db_user = os.environ.get('DB_USER') or os.environ.get('POSTGRES_USER')
-            db_pass = os.environ.get('DB_PASSWORD') or os.environ.get('POSTGRES_PASSWORD')
-            db_name = os.environ.get('DB_NAME') or os.environ.get('POSTGRES_DATABASE')
-            db_port = int(os.environ.get('DB_PORT', 5432))
-            
+        # Check if environment variables for PostgreSQL connection string or credentials are set
+        db_url = (
+            os.environ.get('ALMACENAMIENTO_URL') or 
+            os.environ.get('POSTGRES_URL') or 
+            os.environ.get('DATABASE_URL')
+        )
+        
+        pg_host = (
+            os.environ.get('DB_HOST') or 
+            os.environ.get('POSTGRES_HOST') or 
+            os.environ.get('ALMACENAMIENTO_HOST')
+        )
+        
+        if db_url or pg_host:
+            # Parse connection URL if present
+            if db_url:
+                import urllib.parse
+                result = urllib.parse.urlparse(db_url)
+                db_user = result.username
+                db_pass = result.password
+                pg_host = result.hostname
+                db_port = result.port or 5432
+                db_name = result.path.lstrip('/')
+            else:
+                db_user = os.environ.get('DB_USER') or os.environ.get('POSTGRES_USER') or os.environ.get('ALMACENAMIENTO_USER')
+                db_pass = os.environ.get('DB_PASSWORD') or os.environ.get('POSTGRES_PASSWORD') or os.environ.get('ALMACENAMIENTO_PASSWORD')
+                db_name = os.environ.get('DB_NAME') or os.environ.get('POSTGRES_DATABASE') or os.environ.get('ALMACENAMIENTO_DATABASE')
+                db_port = int(os.environ.get('DB_PORT', 5432))
+                
             conn = pg8000.dbapi.connect(
                 user=db_user,
                 password=db_pass,

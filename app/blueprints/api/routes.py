@@ -645,8 +645,21 @@ def get_casos_lista():
 @login_required
 def get_config():
     import os
+    url = (
+        os.environ.get('SUPABASE_URL') or 
+        os.environ.get('ALMACENAMIENTO_SUPABASE_URL') or 
+        os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or 
+        ''
+    )
+    key = (
+        os.environ.get('SUPABASE_ANON_KEY') or 
+        os.environ.get('ALMACENAMIENTO_SUPABASE_ANON_KEY') or 
+        os.environ.get('ALMACENAMIENTO_ANON_KEY') or 
+        os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or 
+        ''
+    )
     return jsonify({
-        'supabase_url': os.environ.get('SUPABASE_URL', ''),
-        'supabase_key': os.environ.get('SUPABASE_ANON_KEY', '')
+        'supabase_url': url,
+        'supabase_key': key
     })
 
