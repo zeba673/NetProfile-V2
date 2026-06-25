@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes — Lexis Studio{% endblock %}
+{% block page_title %}Mi Cartera de Clientes{% endblock %}
+{% block page_subtitle %}Clientes asignados a su cuenta{% endblock %}
+
+{% block header_actions %}
+<div class="search-input-wrapper" style="min-width:220px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <input type="text" class="search-input" id="search-clientes" placeholder="Buscar cliente..." oninput="filtrarClientes(this.value)">
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Clientes</h2>
+    <span class="badge badge-blue" id="total-clientes">—</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>DNI / CUIT</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Dirección</th>
+          <th>Notas</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-clientes"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Editar Cliente -->
+<div class="modal-overlay" id="modal-editar-cliente">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title">Editar Cliente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-editar-cliente')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-cliente-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre completo / Razón social *</label>
+          <input class="form-control" id="edit-c-nombre" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DNI / CUIT *</label>
+          <input class="form-control" id="edit-c-dni">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-control" id="edit-c-tel" type="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-control" id="edit-c-email" type="email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input class="form-control" id="edit-c-dir">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas internas</label>
+        <textarea class="form-control" id="edit-c-notas" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-editar-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCliente()" id="btn-guardar-c">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let clientesData = [];
+
+async function cargarClientes() {
+  try {
+    clientesData = await Api.clientes.list();
+    renderClientes(clientesData);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function renderClientes(clientes) {
+  const tbody = document.getElementById('tbody-clientes');
+  const total = document.getElementById('total-clientes');
+  total.textContent = `${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}`;
+
+  if (!clientes.length) {
+    tbody.innerHTML = emptyStateHTML('Sin clientes en su cartera');
+    return;
+  }
+
+  tbody.innerHTML = clientes.map(c => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.625rem;">
+          <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:var(--color-accent-soft);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--color-accent);font-size:0.875rem;flex-shrink:0;">${(c.nombre[0]||'?').toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.8125rem;">${c.nombre}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-muted">${c.dni_cuit || '—'}</td>
+      <td class="td-muted">${c.telefono || '—'}</td>
+      <td class="td-muted" style="font-size:0.75rem;">${c.email || '—'}</td>
+      <td class="td-muted" style="max-width:140px;font-size:0.75rem;">${c.direccion || '—'}</td>
+      <td class="td-muted" style="max-width:160px;font-size:0.75rem;">${c.notas || '—'}</td>
+      <td style="text-align:right;">
+        <button class="btn btn-icon" onclick="abrirEdicionCliente(${c.id})" title="Editar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrarClientes(q) {
+  const query = q.toLowerCase();
+  const f = clientesData.filter(c =>
+    c.nombre.toLowerCase().includes(query) ||
+    (c.dni_cuit||'').toLowerCase().includes(query) ||
+    (c.email||'').toLowerCase().includes(query)
+  );
+  renderClientes(f);
+}
+
+function abrirEdicionCliente(id) {
+  const c = clientesData.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('edit-cliente-id').value = c.id;
+  document.getElementById('edit-c-nombre').value = c.nombre || '';
+  document.getElementById('edit-c-dni').value    = c.dni_cuit || '';
+  document.getElementById('edit-c-tel').value    = c.telefono || '';
+  document.getElementById('edit-c-email').value  = c.email || '';
+  document.getElementById('edit-c-dir').value    = c.direccion || '';
+  document.getElementById('edit-c-notas').value  = c.notas || '';
+  Modal.open('modal-editar-cliente');
+}
+
+async function guardarCliente() {
+  const id = document.getElementById('edit-cliente-id').value;
+  const data = {
+    nombre:   document.getElementById('edit-c-nombre').value,
+    dni_cuit: document.getElementById('edit-c-dni').value,
+    telefono: document.getElementById('edit-c-tel').value,
+    email:    document.getElementById('edit-c-email').value,
+    direccion: document.getElementById('edit-c-dir').value,
+    notas:    document.getElementById('edit-c-notas').value,
+  };
+
+  try {
+    await Api.clientes.update(id, data);
+    const idx = clientesData.findIndex(c => c.id == id);
+    if (idx !== -1) Object.assign(clientesData[idx], data);
+    renderClientes(clientesData);
+    Modal.close('modal-editar-cliente');
+    Toast.success('Cliente actualizado', data.nombre);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarClientes);
+</script>
+{% endblock %}

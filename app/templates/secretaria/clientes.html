@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes — Lexis Studio{% endblock %}
+{% block page_title %}Alta y Gestión de Clientes{% endblock %}
+{% block page_subtitle %}Ficha de contacto completa y asignación de abogado{% endblock %}
+
+{% block header_actions %}
+<div class="search-input-wrapper" style="min-width:220px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <input type="text" class="search-input" id="search-cli-sec" placeholder="Buscar cliente..." oninput="filtrarCliSec(this.value)">
+</div>
+<button class="btn btn-primary" onclick="Modal.open('modal-nuevo-cliente')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nuevo Cliente
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Directorio de Clientes</h2>
+    <span class="badge badge-blue" id="total-cli-sec">—</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>DNI / CUIT</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Dirección</th>
+          <th>Abogado asignado</th>
+          <th style="text-align:right;width:100px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-cli-sec"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Nuevo Cliente (ESTRICTO) -->
+<div class="modal-overlay" id="modal-nuevo-cliente">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title">Alta de Nuevo Cliente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-cliente')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:1rem;">
+        Completá la ficha de contacto completa. Los campos marcados con * son obligatorios.
+      </p>
+      <form id="form-nuevo-cliente">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre completo / Razón Social *</label>
+            <input class="form-control" name="nombre" placeholder="Ej: Juan Pérez / Constructora ABC S.A." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">DNI / CUIT *</label>
+            <input class="form-control" name="dni_cuit" placeholder="20-12345678-3" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Teléfono de contacto</label>
+            <input class="form-control" name="telefono" type="tel" placeholder="+54 9 11 1234-5678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control" name="email" type="email" placeholder="contacto@empresa.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección completa</label>
+          <input class="form-control" name="direccion" placeholder="Calle, número, piso, localidad">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Abogado asignado *</label>
+          <select class="form-control" name="abogado_asignado_id" required>
+            <option value="">— Seleccionar abogado —</option>
+            {% for a in abogados %}
+            <option value="{{ a.id }}">{{ a.nombre_completo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas internas</label>
+          <textarea class="form-control" name="notas" rows="2" placeholder="Observaciones, historial, referencias..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearClienteSec()" id="btn-crear-cli">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Registrar Cliente
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modal-editar-cli">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title">Editar Ficha de Cliente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-editar-cli')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eid-cli">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input class="form-control" id="ecli-nombre" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DNI / CUIT *</label>
+          <input class="form-control" id="ecli-dni">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-control" id="ecli-tel" type="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-control" id="ecli-email" type="email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input class="form-control" id="ecli-dir">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Abogado asignado</label>
+        <select class="form-control" id="ecli-abogado">
+          {% for a in abogados %}
+          <option value="{{ a.id }}">{{ a.nombre_completo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea class="form-control" id="ecli-notas" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-editar-cli')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdCliSec()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cliSecData = [];
+
+async function cargarCliSec() {
+  try {
+    cliSecData = await Api.clientes.list();
+    renderCliSec(cliSecData);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function filtrarCliSec(q) {
+  const query = q.toLowerCase();
+  const f = cliSecData.filter(c =>
+    c.nombre.toLowerCase().includes(query) ||
+    (c.dni_cuit||'').toLowerCase().includes(query) ||
+    (c.email||'').toLowerCase().includes(query) ||
+    (c.abogado_nombre||'').toLowerCase().includes(query)
+  );
+  renderCliSec(f);
+}
+
+function renderCliSec(clientes) {
+  const tbody = document.getElementById('tbody-cli-sec');
+  const total = document.getElementById('total-cli-sec');
+  total.textContent = `${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}`;
+
+  if (!clientes.length) { tbody.innerHTML = emptyStateHTML('Sin clientes registrados'); return; }
+
+  tbody.innerHTML = clientes.map(c => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.625rem;">
+          <div style="width:34px;height:34px;border-radius:var(--radius-sm);background:var(--color-accent-soft);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--color-accent);font-size:0.9375rem;flex-shrink:0;">${(c.nombre[0]||'?').toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.8125rem;">${c.nombre}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-muted">${c.dni_cuit || '—'}</td>
+      <td class="td-muted">${c.telefono || '—'}</td>
+      <td class="td-muted" style="font-size:0.75rem;">${c.email || '—'}</td>
+      <td class="td-muted" style="max-width:140px;font-size:0.75rem;">${c.direccion || '—'}</td>
+      <td class="td-muted">${c.abogado_nombre || '—'}</td>
+      <td style="text-align:right;">
+        <div class="d-flex items-center justify-end gap-1">
+          <button class="btn btn-icon" onclick="abrirEdCliSec(${c.id})" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-icon" style="color:var(--color-expense-garnet);" onclick="eliminarCliSec(${c.id})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function crearClienteSec() {
+  const btn = document.getElementById('btn-crear-cli');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+  const data = getFormData('form-nuevo-cliente');
+  if (!data.abogado_asignado_id) { Toast.warning('Campo requerido', 'Seleccioná un abogado.'); setBtnLoading(btn, false, orig); return; }
+
+  try {
+    const resp = await Api.clientes.create(data);
+    cliSecData.unshift(resp.cliente);
+    renderCliSec(cliSecData);
+    Modal.close('modal-nuevo-cliente');
+    resetForm('form-nuevo-cliente');
+    Toast.success('Cliente registrado', resp.cliente.nombre);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+function abrirEdCliSec(id) {
+  const c = cliSecData.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('eid-cli').value      = c.id;
+  document.getElementById('ecli-nombre').value  = c.nombre || '';
+  document.getElementById('ecli-dni').value     = c.dni_cuit || '';
+  document.getElementById('ecli-tel').value     = c.telefono || '';
+  document.getElementById('ecli-email').value   = c.email || '';
+  document.getElementById('ecli-dir').value     = c.direccion || '';
+  document.getElementById('ecli-notas').value   = c.notas || '';
+  const abgSel = document.getElementById('ecli-abogado');
+  if (abgSel) abgSel.value = c.abogado_asignado_id || '';
+  Modal.open('modal-editar-cli');
+}
+
+async function guardarEdCliSec() {
+  const id = document.getElementById('eid-cli').value;
+  const data = {
+    nombre:               document.getElementById('ecli-nombre').value,
+    dni_cuit:             document.getElementById('ecli-dni').value,
+    telefono:             document.getElementById('ecli-tel').value,
+    email:                document.getElementById('ecli-email').value,
+    direccion:            document.getElementById('ecli-dir').value,
+    notas:                document.getElementById('ecli-notas').value,
+    abogado_asignado_id:  document.getElementById('ecli-abogado').value,
+  };
+  try {
+    await Api.clientes.update(id, data);
+    const idx = cliSecData.findIndex(c => c.id == id);
+    if (idx !== -1) Object.assign(cliSecData[idx], data);
+    renderCliSec(cliSecData);
+    Modal.close('modal-editar-cli');
+    Toast.success('Cliente actualizado', data.nombre);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function eliminarCliSec(id) {
+  if (!confirm('¿Eliminar este cliente del sistema?')) return;
+  try {
+    await Api.clientes.delete(id);
+    cliSecData = cliSecData.filter(c => c.id !== id);
+    renderCliSec(cliSecData);
+    Toast.success('Cliente eliminado');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarCliSec);
+</script>
+{% endblock %}

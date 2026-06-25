@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Lexis Studio{% endblock %}
+{% block meta_desc %}Panel estratégico del abogado con KPIs, audiencias próximas y causas activas.{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Resumen estratégico de su actividad profesional{% endblock %}
+
+{% block header_actions %}
+<span style="font-size:0.75rem;color:var(--color-text-muted);">Actualizado en tiempo real</span>
+<button class="btn btn-primary" onclick="refreshDashboard()" id="btn-refresh">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  Actualizar
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── KPIs Bento Grid ── -->
+<div class="bento-grid mb-6">
+
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Casos Activos</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-casos">{{ casos_activos }}</div>
+      <div class="kpi-meta">expedientes en curso</div>
+    </div>
+  </div>
+
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Honorarios Totales</div>
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value income" id="kpi-honorarios">{{ "${:,.2f}".format(ingresos_total) }}</div>
+      <div class="kpi-meta">ingresados en el período</div>
+    </div>
+  </div>
+
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Audiencias Pendientes</div>
+        <div class="kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-audiencias">—</div>
+      <div class="kpi-meta">en agenda próxima</div>
+    </div>
+  </div>
+
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Mi Cartera</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-clientes">—</div>
+      <div class="kpi-meta">clientes asignados</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Segunda fila: Tabla audiencias + Causas críticas ── -->
+<div class="bento-grid">
+
+  <!-- Audiencias próximas -->
+  <div class="bento-col-6">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Audiencias Próximas</h2>
+        <a href="{{ url_for('abogado.agenda') }}" class="btn btn-secondary btn-sm">Ver agenda</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Evento</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-audiencias">
+            {% for a in audiencias_proximas %}
+            <tr>
+              <td>
+                <div style="font-weight:500;font-size:0.8125rem;">{{ a.titulo }}</div>
+                {% if a.expediente %}<div class="td-muted">{{ a.expediente }}</div>{% endif %}
+              </td>
+              <td class="td-muted" style="white-space:nowrap;">{{ a.fecha_hora }}</td>
+              <td><span class="badge badge-navy">{{ a.tipo | capitalize }}</span></td>
+              <td>
+                {% set estado = a.estado %}
+                <span class="badge badge-{{ estado }}">{{ estado | capitalize }}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--color-text-muted);font-size:0.8125rem;">Sin audiencias próximas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Causas críticas -->
+  <div class="bento-col-6">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Causas Activas</h2>
+        <a href="{{ url_for('abogado.casos') }}" class="btn btn-secondary btn-sm">Ver todas</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Expediente</th>
+              <th>Causa</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-causas">
+            {% for c in casos_criticos %}
+            <tr>
+              <td><span style="font-family:var(--font-ui);font-size:0.75rem;font-weight:700;color:var(--color-accent);">{{ c.expediente }}</span></td>
+              <td style="font-size:0.8125rem;max-width:160px;">{{ c.titulo }}</td>
+              <td class="td-muted">{{ c.cliente_nombre }}</td>
+              <td><span class="badge badge-{{ c.estado }}">{{ c.estado | replace('_', ' ') | title }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--color-text-muted);font-size:0.8125rem;">Sin causas activas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function refreshDashboard() {
+  const btn = document.getElementById('btn-refresh');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  try {
+    const stats = await Api.dashboard.stats();
+
+    document.getElementById('kpi-casos').textContent       = stats.casos_activos;
+    document.getElementById('kpi-honorarios').textContent  = new Intl.NumberFormat('es-AR', {style:'currency',currency:'ARS'}).format(stats.ingresos_total);
+    document.getElementById('kpi-audiencias').textContent  = stats.audiencias_pendientes;
+    document.getElementById('kpi-clientes').textContent    = stats.clientes;
+
+    Toast.success('Dashboard actualizado', 'Los KPIs reflejan los datos más recientes.');
+  } catch (err) {
+    Toast.error('Error al actualizar', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+// Auto-refresh KPIs on load
+document.addEventListener('DOMContentLoaded', refreshDashboard);
+</script>
+{% endblock %}

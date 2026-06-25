@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Documentación — Lexis Studio{% endblock %}
+{% block page_title %}Documentación{% endblock %}
+{% block page_subtitle %}Biblioteca de escritos y documentos digitalizados del estudio{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="Modal.open('modal-nuevo-doc')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+  Subir Documento
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="bento-grid mb-6">
+
+  <div class="bento-col-6">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Documentos Digitalizados</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-docs-ok">—</div>
+      <div class="kpi-meta">de <span id="kpi-docs-total">—</span> registrados</div>
+    </div>
+  </div>
+
+  <div class="bento-col-6">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Pendientes de Escaneo</div>
+        <div class="kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-docs-pend">—</div>
+      <div class="kpi-meta">documentos a digitalizar</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Biblioteca de Documentos -->
+<div class="bento-grid">
+  <div class="bento-col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Biblioteca de Documentos</h2>
+        <div class="d-flex gap-2">
+          <select id="filtro-doc-estado" class="form-control" style="width:auto;" onchange="filtrarDocs()">
+            <option value="">Todos</option>
+            <option value="digitalizado">Digitalizados</option>
+            <option value="pendiente_escaneo">Pendientes</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Expediente</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th style="text-align:right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-docs"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Documento -->
+<div class="modal-overlay" id="modal-nuevo-doc">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Subir Documento</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-doc')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-nuevo-doc" enctype="multipart/form-data" onsubmit="event.preventDefault();">
+        <div class="form-group">
+          <label class="form-label">Seleccionar archivo *</label>
+          <input class="form-control" type="file" name="archivo" id="archivo-input" required onchange="onFileSelected(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre del documento en el registro *</label>
+          <input class="form-control" name="nombre_archivo" id="nombre-archivo-field" placeholder="Ej: Escrito de Demanda.pdf" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo de documento</label>
+            <input class="form-control" name="tipo_doc" placeholder="Demanda, Pericia, Contrato...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado" id="estado-select" onchange="actualizarRequeridos()">
+              <option value="digitalizado">Digitalizado</option>
+              <option value="pendiente_escaneo">Pendiente de escaneo</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expediente relacionado</label>
+          <select class="form-control" name="caso_id">
+            <option value="">— Sin expediente —</option>
+            {% for c in casos_lista %}
+            <option value="{{ c.id }}">{{ c.expediente }} — {{ c.titulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <textarea class="form-control" name="notas" rows="2"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-doc')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearDoc()" id="btn-crear-doc">Subir y Registrar</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let docsData = [];
+
+function onFileSelected(input) {
+  if (input.files && input.files[0]) {
+    const nameField = document.getElementById('nombre-archivo-field');
+    // Pre-completar el nombre del archivo con el del sistema de archivos si está vacío
+    if (!nameField.value) {
+      nameField.value = input.files[0].name;
+    }
+  }
+}
+
+async function cargarTodo() {
+  try {
+    docsData = await Api.documentos.list();
+    renderDocs(docsData);
+    calcularKPIs();
+  } catch (err) {
+    Toast.error('Error al cargar', err.message);
+  }
+}
+
+function calcularKPIs() {
+  const digital = docsData.filter(d => d.estado === 'digitalizado').length;
+  const pend    = docsData.filter(d => d.estado === 'pendiente_escaneo').length;
+  document.getElementById('kpi-docs-ok').textContent   = digital;
+  document.getElementById('kpi-docs-total').textContent = docsData.length;
+  document.getElementById('kpi-docs-pend').textContent  = pend;
+}
+
+function filtrarDocs() {
+  const estado = document.getElementById('filtro-doc-estado').value;
+  const f = estado ? docsData.filter(d => d.estado === estado) : docsData;
+  renderDocs(f);
+}
+
+function renderDocs(docs) {
+  const tbody = document.getElementById('tbody-docs');
+  if (!docs.length) { tbody.innerHTML = emptyStateHTML('Sin documentos registrados'); return; }
+  tbody.innerHTML = docs.map(d => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;color:var(--color-accent);flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span style="font-size:0.8125rem;font-weight:500;">${d.nombre_archivo}</span>
+        </div>
+      </td>
+      <td class="td-muted">${d.expediente || '—'}</td>
+      <td class="td-muted">${d.tipo_doc || '—'}</td>
+      <td>${estadoBadge(d.estado)}</td>
+      <td class="td-muted">${formatDate(d.created_at)}</td>
+      <td style="text-align:right;">
+        <div class="d-flex items-center justify-end gap-1">
+          ${d.ruta_archivo ? `
+          <a class="btn btn-icon btn-sm" href="/static/${d.ruta_archivo}" target="_blank" download="${d.nombre_archivo}" title="Descargar archivo" style="color:var(--color-income-green);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>` : ''}
+          <button class="btn btn-icon btn-sm" onclick="toggleEstadoDoc(${d.id}, '${d.estado}')" title="Cambiar estado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="btn btn-icon btn-sm" style="color:var(--color-expense-garnet);" onclick="eliminarDoc(${d.id})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function actualizarRequeridos() {
+  const estadoSelect = document.getElementById('estado-select');
+  if (!estadoSelect) return;
+  const estado = estadoSelect.value;
+  const fileInput = document.getElementById('archivo-input');
+  if (!fileInput) return;
+  const label = fileInput.previousElementSibling;
+  
+  if (estado === 'digitalizado') {
+    fileInput.required = true;
+    if (label) label.innerHTML = 'Seleccionar archivo *';
+  } else {
+    fileInput.required = false;
+    if (label) label.innerHTML = 'Seleccionar archivo (opcional)';
+  }
+}
+
+// Hook into modal open or setup on change
+document.addEventListener('DOMContentLoaded', () => {
+  actualizarRequeridos();
+  
+  // Also hook into Modal.open to run it when opening the modal
+  const origOpen = Modal.open;
+  Modal.open = function(id) {
+    origOpen(id);
+    if (id === 'modal-nuevo-doc') {
+      actualizarRequeridos();
+    }
+  };
+});
+
+async function crearDoc() {
+  const form = document.getElementById('form-nuevo-doc');
+  const fileInput = document.getElementById('archivo-input');
+  const estado = document.getElementById('estado-select').value;
+  
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+  
+  if (estado === 'digitalizado' && (!fileInput.files || fileInput.files.length === 0)) {
+    Toast.warning('Falta archivo', 'Por favor selecciona un archivo para subir ya que el estado es Digitalizado.');
+    return;
+  }
+  
+  if (fileInput.files && fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const maxSize = 16 * 1024 * 1024; // 16 MB
+    if (file.size > maxSize) {
+      Toast.error('Archivo demasiado grande', 'El tamaño del archivo no debe superar los 16 MB.');
+      return;
+    }
+  }
+  
+  const formData = new FormData(form);
+  const btn = document.getElementById('btn-crear-doc');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  try {
+    const response = await fetch('/api/documentos', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    let resp;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      resp = await response.json();
+    } else {
+      resp = { error: `Error del servidor (${response.status})` };
+    }
+
+    if (!response.ok) {
+      if (response.status === 413) {
+        throw new Error('El archivo excede el tamaño máximo permitido (16 MB).');
+      }
+      throw new Error(resp.error || 'Error al subir el archivo');
+    }
+
+    docsData.unshift(resp.documento);
+    renderDocs(docsData);
+    calcularKPIs();
+    Modal.close('modal-nuevo-doc');
+    resetForm('form-nuevo-doc');
+    actualizarRequeridos();
+    Toast.success('Documento registrado', resp.documento.nombre_archivo);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+async function toggleEstadoDoc(id, estadoActual) {
+  const nuevo = estadoActual === 'digitalizado' ? 'pendiente_escaneo' : 'digitalizado';
+  try {
+    await Api.documentos.update(id, { estado: nuevo });
+    const idx = docsData.findIndex(d => d.id === id);
+    if (idx !== -1) docsData[idx].estado = nuevo;
+    renderDocs(docsData);
+    calcularKPIs();
+    Toast.info('Estado actualizado', nuevo === 'digitalizado' ? 'Marcado como digitalizado.' : 'Marcado como pendiente de escaneo.');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function eliminarDoc(id) {
+  if (!confirm('¿Eliminar este documento del registro?')) return;
+  try {
+    await Api.documentos.delete(id);
+    docsData = docsData.filter(d => d.id !== id);
+    renderDocs(docsData);
+    calcularKPIs();
+    Toast.success('Documento eliminado');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+{% endblock %}

@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexis Studio — Sistema de Gestión Jurídica</title>
+<meta name="description" content="Plataforma de gestión jurídica profesional. Casos, agenda, clientes, caja y documentos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════
+   LEXIS STUDIO — Design System
+   Paleta Navy | Playfair Display + Inter
+══════════════════════════════════════════════════ */
+:root {
+  --primary:          #05152b;
+  --primary-cont:     #1b2a41;
+  --sidebar-bg:       #1B2A41;
+  --sidebar-hover:    #243650;
+  --sidebar-active:   #2e4567;
+  --border:           #E2E8F0;
+  --border-dark:      #2a3f5e;
+  --surface:          #f8f9fb;
+  --white:            #ffffff;
+  --income:           #2D6A4F;
+  --income-light:     #d1fae5;
+  --expense:          #7B1113;
+  --expense-light:    #fee2e2;
+  --accent:           #3b7dd8;
+  --accent-soft:      #dbeafe;
+  --text:             #0f172a;
+  --text-sec:         #475569;
+  --text-muted:       #94a3b8;
+  --text-dark:        #e2e8f0;
+  --text-dark-muted:  #94a3b8;
+  --warning:          #b45309;
+  --warning-light:    #fef3c7;
+  --font-d:           'Playfair Display', Georgia, serif;
+  --font-ui:          'Inter', system-ui, sans-serif;
+  --r:                0.25rem;
+  --sidebar-w:        280px;
+  --h-header:         64px;
+  --shadow:           0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg:        0 20px 60px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.1);
+  --transition:       180ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-ui);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── VISTAS ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ══ LOGIN ══════════════════════════════════════ */
+#view-login {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+#view-login.active { display: grid; }
+
+.login-brand {
+  background: linear-gradient(160deg, var(--primary) 0%, var(--primary-cont) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.login-brand::before {
+  content: '';
+  position: absolute;
+  top: -40%; left: -20%;
+  width: 80%; height: 80%;
+  background: radial-gradient(circle, rgba(59,125,216,.12) 0%, transparent 70%);
+}
+.login-logo { display: flex; align-items: center; gap: .75rem; }
+.login-logo-icon {
+  width: 44px; height: 44px;
+  background: rgba(59,125,216,.18);
+  border: 1px solid rgba(59,125,216,.3);
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-logo-icon svg { width: 24px; height: 24px; color: #93c5fd; }
+.login-brand-name { font-family: var(--font-d); font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+.login-brand-sub  { font-size: .6875rem; color: var(--text-dark-muted); letter-spacing: .06em; text-transform: uppercase; }
+
+.login-claim { font-family: var(--font-d); font-size: 2.25rem; font-weight: 700; color: var(--text-dark); line-height: 1.2; margin-bottom: .875rem; }
+.login-claim em { font-style: italic; color: #93c5fd; }
+.login-claim-desc { font-size: .875rem; color: var(--text-dark-muted); line-height: 1.6; max-width: 340px; }
+
+.login-stats { display: flex; gap: 2rem; }
+.login-stat-n { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: #93c5fd; }
+.login-stat-l { font-size: .6875rem; color: var(--text-dark-muted); font-weight: 500; }
+
+.login-form-panel {
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem;
+}
+.login-form-inner { width: 100%; max-width: 380px; }
+.login-form-title { font-family: var(--font-d); font-size: 1.75rem; font-weight: 700; margin-bottom: .375rem; }
+.login-form-sub   { font-size: .875rem; color: var(--text-sec); margin-bottom: 2rem; }
+
+.login-error {
+  background: var(--expense-light);
+  border: 1px solid #fca5a5;
+  border-radius: var(--r);
+  padding: .625rem .875rem;
+  font-size: .8125rem;
+  color: var(--expense);
+  margin-bottom: 1rem;
+  display: none;
+  align-items: center;
+  gap: .5rem;
+}
+.login-error.show { display: flex; }
+
+.login-btn {
+  width: 100%; padding: .6875rem;
+  background: var(--primary); color: white;
+  border: none; border-radius: var(--r);
+  font-family: var(--font-ui); font-size: .875rem; font-weight: 600;
+  cursor: pointer; margin-top: 1.5rem;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  transition: background var(--transition);
+}
+.login-btn:hover { background: var(--primary-cont); }
+
+.demo-hint { margin-top: 1.5rem; font-size: .6875rem; color: var(--text-muted); text-align: center; }
+
+/* ══ APP SHELL ══════════════════════════════════ */
+#app-shell { display: none; min-height: 100vh; }
+#app-shell.active { display: block; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--sidebar-bg);
+  position: fixed; top: 0; left: 0;
+  width: var(--sidebar-w); height: 100vh;
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  z-index: 100;
+  border-right: 1px solid var(--border-dark);
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 2px; }
+
+.sb-header {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+.sb-logo { display: flex; align-items: center; gap: .625rem; margin-bottom: .75rem; }
+.sb-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #3b7dd8, #1e5db3);
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sb-logo-icon svg { width: 20px; height: 20px; color: #fff; }
+.sb-brand { font-family: var(--font-d); font-size: 1.125rem; font-weight: 700; color: var(--text-dark); }
+.sb-brand-sub { font-size: .625rem; font-weight: 500; color: var(--text-dark-muted); letter-spacing: .08em; text-transform: uppercase; }
+
+.sb-user {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r);
+  padding: .625rem .75rem;
+  display: flex; align-items: center; gap: .625rem;
+}
+.sb-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b7dd8, #1e5db3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-d); font-size: .875rem; font-weight: 700;
+  color: #fff; flex-shrink: 0;
+}
+.sb-user-name { font-size: .75rem; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-user-tag  { font-size: .625rem; color: #3b7dd8; letter-spacing: .06em; text-transform: uppercase; }
+
+.sb-nav { flex: 1; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .125rem; }
+.sb-nav-label {
+  font-size: .625rem; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-dark-muted);
+  padding: .75rem .5rem .375rem; margin-top: .25rem;
+}
+.sb-nav-item {
+  display: flex; align-items: center; gap: .625rem;
+  padding: .5rem .75rem;
+  border-radius: var(--r);
+  color: var(--text-dark-muted);
+  font-size: .8125rem; font-weight: 500;
+  cursor: pointer; border: none;
+  background: transparent; width: 100%;
+  text-align: left;
+  transition: background var(--transition), color var(--transition);
+}
+.sb-nav-item:hover  { background: var(--sidebar-hover); color: var(--text-dark); }
+.sb-nav-item.active { background: var(--sidebar-active); color: var(--white); }
+.sb-nav-item svg    { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ── CLOCK ── */
+.sb-clock {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-dark);
+  background: rgba(0,0,0,.15);
+}
+.clock-time { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: var(--text-dark); letter-spacing: .02em; line-height: 1; margin-bottom: .25rem; }
+.clock-date { font-size: .6875rem; color: var(--text-dark-muted); text-transform: capitalize; }
+
+.sb-logout {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .625rem 1.25rem;
+  color: var(--text-dark-muted); font-size: .75rem; font-weight: 500;
+  cursor: pointer; border: none; background: transparent;
+  border-top: 1px solid var(--border-dark); width: 100%;
+  transition: color var(--transition);
+}
+.sb-logout:hover { color: #ef4444; }
+.sb-logout svg { width: 14px; height: 14px; }
+
+/* ── MAIN ── */
+.main { margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-height: 100vh; }
+
+.page-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: var(--h-header);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.page-title    { font-family: var(--font-d); font-size: 1.125rem; font-weight: 600; }
+.page-subtitle { font-size: .75rem; color: var(--text-sec); margin-top: .125rem; }
+.header-actions { display: flex; align-items: center; gap: .75rem; }
+
+.page-body { flex: 1; padding: 2rem; }
+
+/* ── PANEL DE PÁGINA ── */
+.page-view { display: none; }
+.page-view.active { display: block; }
+
+/* ══ COMPONENTES ════════════════════════════════ */
+
+/* Bento Grid */
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+.c3 { grid-column: span 3; }
+.c4 { grid-column: span 4; }
+.c6 { grid-column: span 6; }
+.c8 { grid-column: span 8; }
+.c12{ grid-column: span 12; }
+.mb4 { margin-bottom: 1rem; }
+.mb6 { margin-bottom: 1.5rem; }
+
+/* KPI Card */
+.kpi {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.25rem;
+  display: flex; flex-direction: column; gap: .5rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s, transform .2s;
+}
+.kpi:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); transform: translateY(-1px); }
+.kpi-row { display: flex; align-items: center; justify-content: space-between; }
+.kpi-label { font-size: .6875rem; font-weight: 600; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; }
+.kpi-val   { font-family: var(--font-d); font-size: 1.75rem; font-weight: 700; color: var(--text); line-height: 1; }
+.kpi-val.income  { color: var(--income); }
+.kpi-val.expense { color: var(--expense); }
+.kpi-meta  { font-size: .6875rem; color: var(--text-muted); }
+.kpi-icon  { width: 36px; height: 36px; border-radius: var(--r); display: flex; align-items: center; justify-content: center; }
+.kpi-icon svg { width: 18px; height: 18px; }
+.kpi-icon.blue  { background: var(--accent-soft);   color: var(--accent); }
+.kpi-icon.green { background: var(--income-light);  color: var(--income); }
+.kpi-icon.red   { background: var(--expense-light); color: var(--expense); }
+.kpi-icon.amber { background: var(--warning-light); color: var(--warning); }
+
+/* Card */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); }
+.card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title  { font-family: var(--font-d); font-size: .9375rem; font-weight: 600; }
+.card-body   { padding: 1.25rem; }
+
+/* Tabla */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+thead th {
+  background: var(--surface); padding: .625rem 1rem;
+  text-align: left; font-size: .6875rem; font-weight: 600;
+  color: var(--text-sec); letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f8fafc; }
+tbody td { padding: .75rem 1rem; vertical-align: middle; }
+.td-m { color: var(--text-muted); font-size: .75rem; }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: .25rem;
+  padding: .1875rem .5rem;
+  border-radius: .125rem;
+  font-size: .6875rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.b-green   { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.b-red     { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.b-blue    { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+.b-amber   { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+.b-slate   { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.b-navy    { background: #1e3a5f; color: #93c5fd; border-color: #2d4a70; }
+
+/* Botones */
+.btn {
+  display: inline-flex; align-items: center; gap: .375rem;
+  padding: .4375rem .875rem;
+  border-radius: var(--r);
+  font-family: var(--font-ui); font-size: .8125rem; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent;
+  transition: all var(--transition);
+  white-space: nowrap; line-height: 1;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-sm  { padding: .3125rem .625rem; font-size: .75rem; }
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-cont); }
+.btn-secondary { background: transparent; color: var(--text-sec); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface); color: var(--text); }
+.btn-success { background: var(--income); color: white; border-color: var(--income); }
+.btn-success:hover { background: #245a41; }
+.btn-danger { background: var(--expense); color: white; border-color: var(--expense); }
+.btn-danger:hover { background: #5e0d0f; }
+.btn-icon { padding: .375rem; background: transparent; border-color: transparent; color: var(--text-muted); }
+.btn-icon:hover { background: var(--surface); color: var(--text); }
+.btn-icon svg { width: 15px; height: 15px; }
+
+/* Formularios */
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; font-size: .75rem; font-weight: 600; color: var(--text-sec); margin-bottom: .375rem; }
+.form-control {
+  width: 100%; padding: .5rem .75rem;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); font-family: var(--font-ui);
+  font-size: .8125rem; color: var(--text); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,125,216,.1); }
+.form-control::placeholder { color: var(--text-muted); }
+textarea.form-control { resize: vertical; min-height: 80px; }
+select.form-control {
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .625rem center;
+  padding-right: 2rem;
+}
+.form-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,21,43,.65);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity .25s, visibility .25s;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--white); border-radius: var(--r);
+  border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 560px; max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(12px) scale(.98);
+  transition: transform .25s;
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+.modal-lg { max-width: 720px; }
+.modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title  { font-family: var(--font-d); font-size: 1rem; font-weight: 600; }
+.modal-close  { width: 28px; height: 28px; border-radius: var(--r); border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: all var(--transition); }
+.modal-close:hover { background: var(--surface); color: var(--text); }
+.modal-close svg { width: 14px; height: 14px; }
+.modal-body   { padding: 1.5rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; gap: .5rem; }
+
+/* Toasts */
+#toasts {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999; display: flex; flex-direction: column; gap: .625rem;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .875rem 1rem;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--shadow-lg);
+  min-width: 280px; max-width: 360px;
+  pointer-events: all;
+  animation: tIn .3s ease forwards;
+}
+.toast.out { animation: tOut .25s ease forwards; }
+.toast-icon svg { width: 20px; height: 20px; }
+.toast-title { font-size: .8125rem; font-weight: 600; margin-bottom: .125rem; }
+.toast-msg   { font-size: .75rem; color: var(--text-sec); }
+.toast-ok   { border-left: 3px solid #22c55e; }
+.toast-ok   .toast-icon { color: #22c55e; }
+.toast-err  { border-left: 3px solid var(--expense); }
+.toast-err  .toast-icon { color: var(--expense); }
+.toast-info { border-left: 3px solid var(--accent); }
+.toast-info .toast-icon { color: var(--accent); }
+.toast-warn { border-left: 3px solid var(--warning); }
+.toast-warn .toast-icon { color: var(--warning); }
+@keyframes tIn  { from { opacity:0; transform:translateX(24px) scale(.96); } to { opacity:1; transform:none; } }
+@keyframes tOut { from { opacity:1; } to { opacity:0; transform:translateX(24px); } }
+
+/* Task */
+.task-item { display: flex; align-items: flex-start; gap: .75rem; padding: .625rem 0; border-bottom: 1px solid var(--border); }
+.task-item:last-child { border-bottom: none; }
+.task-item.done .task-text { text-decoration: line-through; color: var(--text-muted); }
+.task-cb {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--border); border-radius: 2px;
+  cursor: pointer; flex-shrink: 0; appearance: none;
+  background: white; margin-top: .125rem;
+  transition: all var(--transition); position: relative;
+}
+.task-cb:checked { background: var(--income); border-color: var(--income); }
+.task-cb:checked::after { content:''; position:absolute; left:3px; top:1px; width:8px; height:5px; border-left:1.5px solid white; border-bottom:1.5px solid white; transform:rotate(-45deg); }
+.task-text { font-size: .8125rem; color: var(--text); flex: 1; line-height: 1.4; }
+.task-meta { font-size: .6875rem; color: var(--text-muted); margin-top: .2rem; }
+
+/* Caso card expandible */
+.caso-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: .75rem; overflow: hidden; transition: box-shadow .2s; }
+.caso-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.caso-hdr { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 1rem; }
+.caso-hdr:hover { background: #fafbfc; }
+.caso-exp { font-size: .75rem; font-weight: 700; color: var(--accent); letter-spacing: .04em; margin-bottom: .125rem; }
+.caso-titulo { font-family: var(--font-d); font-size: .9375rem; font-weight: 600; }
+.caso-body { display: none; padding: 1.25rem; border-top: 1px solid var(--border); background: #fafbfc; }
+.caso-card.exp .caso-body { display: block; }
+.expand-icon { transition: transform .25s; color: var(--text-muted); }
+.expand-icon svg { width: 16px; height: 16px; }
+.caso-card.exp .expand-icon { transform: rotate(180deg); }
+
+.nota-box { background: var(--primary); border-radius: var(--r); padding: .875rem; margin-top: .75rem; }
+.nota-box label { font-size: .625rem; font-weight: 700; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: .375rem; }
+.nota-box textarea { width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 2px; color: var(--text-dark); font-family: var(--font-ui); font-size: .8125rem; padding: .625rem; resize: vertical; min-height: 72px; outline: none; }
+.nota-box textarea:focus { border-color: rgba(59,125,216,.6); }
+
+/* Caja */
+.fin-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.fin-stat { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem; text-align: center; }
+.fin-label { font-size: .6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .5rem; }
+.fin-val   { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; }
+.fin-val.income  { color: var(--income); }
+.fin-val.expense { color: var(--expense); }
+.mon-in  { color: var(--income);  font-weight: 600; }
+.mon-out { color: var(--expense); font-weight: 600; }
+
+/* Search */
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: .625rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
+.search-wrap input { padding-left: 2rem; }
+
+/* Util */
+.flex  { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.gap-2 { gap: .5rem; }
+.gap-3 { gap: .75rem; }
+.gap-4 { gap: 1rem; }
+.ml-auto { margin-left: auto; }
+.w-full  { width: 100%; }
+.text-xs { font-size: .75rem; }
+.text-muted { color: var(--text-muted); }
+.font-semibold { font-weight: 600; }
+
+/* Spinner */
+.spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Wait room */
+.wait-item { display: flex; align-items: center; gap: .875rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.wait-item:last-child { border-bottom: none; }
+.wait-av { width:38px; height:38px; border-radius:var(--r); background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-size:1rem; font-weight:700; color:var(--accent); flex-shrink:0; }
+
+/* Empty state */
+.empty { text-align:center; padding:3rem 1rem; color:var(--text-muted); }
+.empty svg { width:40px; height:40px; margin:0 auto .75rem; display:block; opacity:.35; }
+.empty-title { font-size:.875rem; font-weight:600; color:var(--text-sec); margin-bottom:.25rem; }
+.empty-desc  { font-size:.75rem; }
+
+/* Tipo indicator en caja */
+.tipo-ind { display:flex; align-items:center; gap:.5rem; padding:.625rem .875rem; border-radius:var(--r); margin-bottom:1rem; }
+.tipo-ind svg { width:16px; height:16px; }
+.tipo-ind span { font-size:.8125rem; font-weight:600; }
+
+/* Filtros */
+.filter-bar { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+
+@media(max-width:900px){
+  #view-login { grid-template-columns:1fr; }
+  .login-brand { display:none; }
+  #app-shell.active { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .main { margin-left:0; }
+  .bento { grid-template-columns:1fr; }
+  .c3,.c4,.c6,.c8,.c12 { grid-column:span 1; }
+  .fin-summary { grid-template-columns:1fr; }
+  .form-row,.form-row3 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════════ -->
+<div id="toasts"></div>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════════ -->
+<div id="view-login" class="view active">
+  <div class="login-brand">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="login-brand-name">Lexis Studio</div>
+        <div class="login-brand-sub">Sistema de Gestión Jurídica</div>
+      </div>
+    </div>
+    <div>
+      <h1 class="login-claim">El derecho,<br><em>organizado con precisión.</em></h1>
+      <p class="login-claim-desc">Plataforma integral para la gestión de causas, agenda, clientes y finanzas del estudio jurídico. Acceso diferenciado por rol profesional.</p>
+    </div>
+    <div class="login-stats">
+      <div><div class="login-stat-n">100%</div><div class="login-stat-l">Seguro y persistente</div></div>
+      <div><div class="login-stat-n">CRUD</div><div class="login-stat-l">Sin recarga de página</div></div>
+      <div><div class="login-stat-n">2</div><div class="login-stat-l">Roles diferenciados</div></div>
+    </div>
+  </div>
+  <div class="login-form-panel">
+    <div class="login-form-inner">
+      <h2 class="login-form-title">Bienvenido</h2>
+      <p class="login-form-sub">Ingresá tus credenciales de acceso.</p>
+      <div class="login-error" id="login-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="login-error-text">Usuario o contraseña incorrectos.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="l-user">Usuario</label>
+        <input class="form-control" type="text" id="l-user" placeholder="Ej: jsmith" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="l-pass">Contraseña</label>
+        <input class="form-control" type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="login-btn" id="btn-login" onclick="doLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Ingresar al sistema
+      </button>
+      <p class="demo-hint">Demo → <strong>jsmith</strong> (Abogado) · <strong>mgarcia</strong> (Secretaria) · contraseña: <strong>demo123</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════ -->
+<div id="app-shell" class="view">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div class="sb-brand">Lexis Studio</div>
+          <div class="sb-brand-sub">Gestión Jurídica</div>
+        </div>
+      </div>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">J</div>
+        <div style="overflow:hidden;">
+          <div class="sb-user-name" id="sb-nombre">—</div>
+          <div class="sb-user-tag"  id="sb-rol-tag">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV ABOGADO -->
+    <nav class="sb-nav" id="nav-abogado" style="display:none;">
+      <div class="sb-nav-label">Panel</div>
+      <button class="sb-nav-item active" data-page="a-dashboard" onclick="goPage('a-dashboard',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <div class="sb-nav-label">Trabajo</div>
+      <button class="sb-nav-item" data-page="a-casos" onclick="goPage('a-casos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Mis Casos
+      </button>
+      <button class="sb-nav-item" data-page="a-agenda" onclick="goPage('a-agenda',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Mi Agenda
+      </button>
+      <button class="sb-nav-item" data-page="a-clientes" onclick="goPage('a-clientes',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clientes
+      </button>
+      <button class="sb-nav-item" data-page="a-documentos" onclick="goPage('a-documentos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Documentación
+      </button>
+      <button class="sb-nav-item" data-page="a-facturacion" onclick="goPage('a-facturacion',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Facturación
+      </button>
+    </nav>
+
+    <!-- NAV SECRETARIA -->
+    <nav class="sb-nav" id="nav-secretaria" style="display:none;">
+      <div class="sb-nav-label">Panel</div>
+      <button class="sb-nav-item active" data-page="s-dashboard" onclick="goPage('s-dashboard',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard Diario
+      </button>
+      <div class="sb-nav-label">Operaciones</div>
+      <button class="sb-nav-item" data-page="s-agenda" onclick="goPage('s-agenda',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda General
+      </button>
+      <button class="sb-nav-item" data-page="s-casos" onclick="goPage('s-casos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+        Gestión de Casos
+      </button>
+      <button class="sb-nav-item" data-page="s-clientes" onclick="goPage('s-clientes',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        Clientes
+      </button>
+      <button class="sb-nav-item" data-page="s-caja" onclick="goPage('s-caja',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Caja / Finanzas
+      </button>
+    </nav>
+
+    <!-- RELOJ EN VIVO -->
+    <div class="sb-clock">
+      <div class="clock-time" id="clock-time">--:--:--</div>
+      <div class="clock-date" id="clock-date">Cargando...</div>
+    </div>
+    <button class="sb-logout" onclick="doLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </button>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="main">
+    <header class="page-header">
+      <div>
+        <div class="page-title" id="pg-title">Dashboard</div>
+        <div class="page-subtitle" id="pg-subtitle"></div>
+      </div>
+      <div class="header-actions" id="pg-actions"></div>
+    </header>
+    <div class="page-body" id="pg-body"></div>
+  </main>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODALES (compartidos)
+══════════════════════════════════════════════ -->
+
+<!-- Modal genérico de formulario -->
+<div class="modal-overlay" id="modal-form">
+  <div class="modal" id="modal-form-inner">
+    <div class="modal-header">
+      <h3 class="modal-title" id="mf-title">Formulario</h3>
+      <button class="modal-close" onclick="closeModal('modal-form')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="mf-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-form')">Cancelar</button>
+      <button class="btn btn-primary" id="mf-submit">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de movimiento de caja -->
+<div class="modal-overlay" id="modal-caja">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="mc-title">Registrar Movimiento</h3>
+      <button class="modal-close" onclick="closeModal('modal-caja')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mc-tipo" value="ingreso">
+      <div class="tipo-ind" id="mc-ind" style="background:var(--income-light);border:1px solid #bbf7d0;">
+        <svg id="mc-ind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--income);"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span id="mc-ind-text" style="color:var(--income);">Registrando INGRESO de fondos</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción *</label>
+        <input class="form-control" id="mc-desc" placeholder="Ej: Honorarios — Exp. 2024-001">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto (ARS) *</label>
+          <input class="form-control" id="mc-monto" type="number" min="0.01" step="0.01" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input class="form-control" id="mc-fecha" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select class="form-control" id="mc-cat">
+            <option value="honorarios">Honorarios</option>
+            <option value="consultas">Consultas</option>
+            <option value="gastos_judic">Gastos Judiciales</option>
+            <option value="peritos">Peritos</option>
+            <option value="admin">Administración</option>
+            <option value="alquiler">Alquiler</option>
+            <option value="servicios">Servicios</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="mc-estado">
+            <option value="completado">Completed</option>
+            <option value="procesando">Processing</option>
+            <option value="fallido">Failed</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-caja')">Cancelar</button>
+      <button class="btn btn-primary" id="mc-submit" onclick="guardarMovimiento()">Confirmar Registro</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   LEXIS STUDIO — Core JS
+   Persistencia: localStorage | SPA Router | CRUD completo
+══════════════════════════════════════════════════════════════ */
+
+// ─── USUARIOS ────────────────────────────────────────────────
+const USERS = [
+  { id:1, usuario:'jsmith',  pass:'demo123', rol:'abogado',    nombre:'Dr. Juan Smith' },
+  { id:2, usuario:'mgarcia', pass:'demo123', rol:'secretaria', nombre:'María García'    },
+  { id:3, usuario:'rlopez',  pass:'demo123', rol:'abogado',    nombre:'Dr. Roberto López' },
+];
+
+// ─── ESTADO GLOBAL ───────────────────────────────────────────
+let session = null;
+
+// ─── PERSISTENCIA localStorage ───────────────────────────────
+const DB = {
+  get(key, def=[]) {
+    try { return JSON.parse(localStorage.getItem('ls_'+key)) ?? def; }
+    catch { return def; }
+  },
+  set(key, val) { localStorage.setItem('ls_'+key, JSON.stringify(val)); },
+  nextId(key) {
+    const items = DB.get(key);
+    return items.length ? Math.max(...items.map(i=>i.id))+1 : 1;
+  }
+};
+
+// ─── SEED DATA (solo la primera vez) ─────────────────────────
+function seedIfEmpty() {
+  if (DB.get('seeded',false)) return;
+
+  DB.set('clientes',[
+    {id:1, dni:'20-12345678-3', nombre:'Constructora Méndez S.A.',   tel:'+54 11 4567-8901', email:'contacto@mendez.com.ar',   dir:'Av. Corrientes 1234', notas:'Cliente corporativo', abogado_id:1},
+    {id:2, dni:'27-98765432-1', nombre:'Laura Fernández',             tel:'+54 9 11 2345-6789',email:'lfernandez@gmail.com',    dir:'Belgrano 456, San Isidro', notas:'Caso civil',   abogado_id:1},
+    {id:3, dni:'30-87654321-5', nombre:'Importadora Del Sur S.R.L.', tel:'+54 11 3456-7890', email:'legal@delsur.com.ar',      dir:'Madero 789, Microcentro', notas:'Litigio activo', abogado_id:3},
+    {id:4, dni:'20-45678901-2', nombre:'Carlos Ruiz',                 tel:'+54 9 11 8765-4321',email:'c.ruiz@hotmail.com',     dir:'Libertad 321, Palermo', notas:'Consulta sucesoria', abogado_id:1},
+    {id:5, dni:'27-34567890-4', nombre:'Technovate Argentina S.A.',  tel:'+54 11 5678-9012', email:'legal@technovate.com.ar', dir:'Reconquista 555, CABA', notas:'Contrato laboral', abogado_id:3},
+  ]);
+  DB.set('casos',[
+    {id:1, exp:'EXP-2024-001', titulo:'Méndez vs. Municipalidad',          desc:'Impugnación de obra pública',               cliente_id:1, abogado_id:1, estado:'activo',   nota:'Prioridad alta. Audiencia próxima semana.', created:'2024-03-10'},
+    {id:2, exp:'EXP-2024-002', titulo:'Fernández — Divorcio Contencioso',  desc:'Proceso de divorcio con disputa de bienes', cliente_id:2, abogado_id:1, estado:'en_curso', nota:'Acordar con contraparte. Mediación en análisis.', created:'2024-04-15'},
+    {id:3, exp:'EXP-2024-003', titulo:'Del Sur — Incumplimiento Comercial',desc:'Demanda por incumplimiento de contrato',    cliente_id:3, abogado_id:3, estado:'activo',   nota:'Documentación enviada. Esperar respuesta.', created:'2024-05-02'},
+    {id:4, exp:'EXP-2024-004', titulo:'Ruiz — Sucesión Intestada',         desc:'Proceso sucesorio sin testamento',          cliente_id:4, abogado_id:1, estado:'en_curso', nota:'Inventario completo. Siguiente: declaratoria.', created:'2024-05-20'},
+    {id:5, exp:'EXP-2024-005', titulo:'Technovate — Laboral',              desc:'Despido sin causa, negociación',            cliente_id:5, abogado_id:3, estado:'activo',   nota:'Evaluar acuerdo extrajudicial.', created:'2024-06-01'},
+    {id:6, exp:'EXP-2023-089', titulo:'Méndez — Locación',                 desc:'Disputa de contrato de alquiler',          cliente_id:1, abogado_id:1, estado:'cerrado',  nota:'Resuelto favorablemente.', created:'2023-11-10'},
+  ]);
+  DB.set('audiencias',[
+    {id:1, caso_id:1, titulo:'Audiencia de Vista de Causa',     fecha:'2026-07-02T10:00', tipo:'audiencia', estado:'confirmada', desc:'Sala 4, Juzgado Civil N°12'},
+    {id:2, caso_id:2, titulo:'Mediación Prejudicial',           fecha:'2026-07-05T14:30', tipo:'reunion',   estado:'pendiente',  desc:'Centro de Mediación CABA'},
+    {id:3, caso_id:3, titulo:'Reunión con Perito Contable',     fecha:'2026-07-03T09:00', tipo:'reunion',   estado:'confirmada', desc:'Oficina del perito'},
+    {id:4, caso_id:4, titulo:'Declaratoria de Herederos',       fecha:'2026-07-10T11:00', tipo:'audiencia', estado:'pendiente',  desc:'Juzgado Civil N°8'},
+    {id:5, caso_id:null,titulo:'Recepción — Nuevo cliente',     fecha:'2026-07-01T16:00', tipo:'recepcion', estado:'confirmada', desc:'Oficina del estudio'},
+    {id:6, caso_id:5, titulo:'Audiencia Laboral',               fecha:'2026-07-08T10:30', tipo:'audiencia', estado:'pendiente',  desc:'Juzgado del Trabajo N°5'},
+    {id:7, caso_id:null,titulo:'Reunión de equipo semanal',     fecha:'2026-06-30T09:00', tipo:'reunion',   estado:'confirmada', desc:'Sala de reuniones principal'},
+  ]);
+  DB.set('documentos',[
+    {id:1, caso_id:1, nombre:'Escrito de Demanda.pdf',           tipo:'Demanda',       estado:'digitalizado',     notas:'', created:'2024-03-12'},
+    {id:2, caso_id:1, nombre:'Prueba Pericial — Planos.pdf',     tipo:'Pericia',       estado:'pendiente_escaneo',notas:'', created:'2024-03-20'},
+    {id:3, caso_id:2, nombre:'Acta Matrimonial.pdf',             tipo:'Acta',          estado:'digitalizado',     notas:'', created:'2024-04-18'},
+    {id:4, caso_id:3, nombre:'Contrato Comercial 2023.pdf',      tipo:'Contrato',      estado:'digitalizado',     notas:'', created:'2024-05-05'},
+    {id:5, caso_id:4, nombre:'Certificado de Defunción.pdf',     tipo:'Certificado',   estado:'pendiente_escaneo',notas:'', created:'2024-05-22'},
+    {id:6, caso_id:5, nombre:'Telegrama de Despido.pdf',         tipo:'Notificación',  estado:'digitalizado',     notas:'', created:'2024-06-03'},
+    {id:7, caso_id:5, nombre:'Recibo de Sueldo Dic 2025.pdf',    tipo:'Comprobante',   estado:'pendiente_escaneo',notas:'', created:'2024-06-10'},
+  ]);
+  DB.set('movimientos',[
+    {id:1,  tipo:'ingreso', monto:85000,  desc:'Honorarios — Exp. 2024-001 (Méndez)',       cat:'honorarios',   fecha:'2026-06-20', estado:'completado', user_id:1},
+    {id:2,  tipo:'ingreso', monto:42000,  desc:'Anticipo de Honorarios — Exp. 2024-002',    cat:'honorarios',   fecha:'2026-06-18', estado:'completado', user_id:1},
+    {id:3,  tipo:'egreso',  monto:12500,  desc:'Sellado judicial — Exp. 2024-003',          cat:'gastos_judic', fecha:'2026-06-19', estado:'completado', user_id:2},
+    {id:4,  tipo:'ingreso', monto:120000, desc:'Honorarios — Exp. 2024-003 (Del Sur)',      cat:'honorarios',   fecha:'2026-06-22', estado:'completado', user_id:3},
+    {id:5,  tipo:'egreso',  monto:8900,   desc:'Honorarios perito contable',                cat:'peritos',      fecha:'2026-06-21', estado:'completado', user_id:2},
+    {id:6,  tipo:'egreso',  monto:3200,   desc:'Fotocopias y certificaciones',              cat:'admin',        fecha:'2026-06-23', estado:'completado', user_id:2},
+    {id:7,  tipo:'ingreso', monto:65000,  desc:'Honorarios — Exp. 2024-005 (Technovate)',   cat:'honorarios',   fecha:'2026-06-24', estado:'procesando', user_id:3},
+    {id:8,  tipo:'egreso',  monto:15000,  desc:'Alquiler oficina — Junio 2026',             cat:'alquiler',     fecha:'2026-06-01', estado:'completado', user_id:2},
+    {id:9,  tipo:'egreso',  monto:4500,   desc:'Servicios (Internet + Telefonía)',          cat:'servicios',    fecha:'2026-06-05', estado:'completado', user_id:2},
+    {id:10, tipo:'ingreso', monto:30000,  desc:'Consulta — Nuevo cliente potencial',        cat:'consultas',    fecha:'2026-06-24', estado:'completado', user_id:1},
+  ]);
+  DB.set('tareas',[
+    {id:1, desc:'Preparar escrito de contestación — Exp. 2024-003', done:false, limite:'2026-07-02', prioridad:'alta'},
+    {id:2, desc:'Notificar a cliente Fernández sobre mediación',     done:false, limite:'2026-06-28', prioridad:'urgente'},
+    {id:3, desc:'Revisar documentación de Technovate',              done:false, limite:'2026-07-01', prioridad:'normal'},
+    {id:4, desc:'Coordinar peritos para Exp. 2024-001',             done:true,  limite:'2026-06-25', prioridad:'alta'},
+    {id:5, desc:'Actualizar legajos digitales',                     done:false, limite:'2026-07-05', prioridad:'baja'},
+    {id:6, desc:'Enviar factura a Importadora Del Sur',             done:false, limite:'2026-06-27', prioridad:'normal'},
+    {id:7, desc:'Archivar expediente 2023-089',                     done:true,  limite:'2026-06-20', prioridad:'baja'},
+  ]);
+  DB.set('seeded', true);
+}
+
+// ─── UTILIDADES ──────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt  = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2}).format(n);
+const fmtD = s => s ? new Date(s.replace('T',' ')).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+const fmtDT= s => s ? new Date(s.replace('T',' ')).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
+
+function badge(cls,txt){ return `<span class="badge ${cls}">${txt}</span>`; }
+function estadoBadge(e){
+  const m={
+    activo:'b-blue',en_curso:'b-amber',cerrado:'b-green',archivado:'b-slate',
+    pendiente:'b-amber',confirmada:'b-green',cancelada:'b-red',realizada:'b-slate',
+    completado:'b-green',procesando:'b-amber',fallido:'b-red',
+    pendiente_escaneo:'b-amber',digitalizado:'b-green',
+  };
+  const l={
+    activo:'Activo',en_curso:'En Curso',cerrado:'Cerrado',archivado:'Archivado',
+    pendiente:'Pendiente',confirmada:'Confirmada',cancelada:'Cancelada',realizada:'Realizada',
+    completado:'Completed',procesando:'Processing',fallido:'Failed',
+    pendiente_escaneo:'Pendiente escaneo',digitalizado:'Digitalizado',
+  };
+  return badge(m[e]||'b-slate', l[e]||e);
+}
+function tipoBadge(t){
+  const m={audiencia:'b-navy',reunion:'b-blue',recepcion:'b-amber',ingreso:'b-green',egreso:'b-red'};
+  const l={audiencia:'Audiencia',reunion:'Reunión',recepcion:'Recepción',ingreso:'Ingreso',egreso:'Egreso'};
+  return badge(m[t]||'b-slate', l[t]||t);
+}
+function priorBadge(p){
+  const m={baja:'#64748b',normal:'#3b7dd8',alta:'#b45309',urgente:'#b91c1c'};
+  return `<span style="font-size:.6875rem;font-weight:600;color:${m[p]||'#64748b'};">${p.charAt(0).toUpperCase()+p.slice(1)}</span>`;
+}
+function emptyRow(msg='Sin registros',cols=99){
+  return `<tr><td colspan="${cols}"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><div class="empty-title">${msg}</div><div class="empty-desc">Usá el botón de arriba para agregar.</div></div></td></tr>`;
+}
+
+// ─── TOAST ───────────────────────────────────────────────────
+const TOAST_ICONS={
+  ok:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  err:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+  info:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  warn:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+};
+function toast(type, title, msg='', dur=3500){
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  el.innerHTML=`<div class="toast-icon">${TOAST_ICONS[type]||TOAST_ICONS.info}</div><div><div class="toast-title">${title}</div>${msg?`<div class="toast-msg">${msg}</div>`:''}</div>`;
+  $('toasts').appendChild(el);
+  const t=setTimeout(()=>dismiss(el),dur);
+  el.addEventListener('click',()=>{clearTimeout(t);dismiss(el);});
+}
+function dismiss(el){el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true});}
+const Toast={
+  ok:(t,m,d)=>toast('ok',t,m,d),
+  err:(t,m,d)=>toast('err',t,m,d),
+  info:(t,m,d)=>toast('info',t,m,d),
+  warn:(t,m,d)=>toast('warn',t,m,d),
+};
+
+// ─── MODAL ───────────────────────────────────────────────────
+function openModal(id){ const el=$(id); if(el){ el.classList.add('open'); document.body.style.overflow='hidden'; setTimeout(()=>{const f=el.querySelector('input,select,textarea');if(f)f.focus();},200); }}
+function closeModal(id){ const el=$(id); if(el){ el.classList.remove('open'); document.body.style.overflow=''; }}
+document.addEventListener('click',e=>{ if(e.target.classList.contains('modal-overlay')) closeModal(e.target.id); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>{ m.classList.remove('open'); document.body.style.overflow=''; }); });
+
+// ─── RELOJ EN VIVO ───────────────────────────────────────────
+const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function updateClock(){
+  const n=new Date();
+  const p=x=>String(x).padStart(2,'0');
+  const te=$('clock-time'), de=$('clock-date');
+  if(te) te.textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  if(de) de.textContent=`${DIAS[n.getDay()]}, ${n.getDate()} de ${MESES[n.getMonth()]} de ${n.getFullYear()}`;
+}
+updateClock();
+setInterval(updateClock,1000);
+
+// ─── AUTENTICACIÓN ───────────────────────────────────────────
+function doLogin(){
+  const u=$('l-user').value.trim();
+  const p=$('l-pass').value;
+  const err=$('login-error');
+  if(!u||!p){err.classList.add('show');$('login-error-text').textContent='Completá todos los campos.';return;}
+  const user=USERS.find(x=>x.usuario===u&&x.pass===p);
+  if(!user){err.classList.add('show');$('login-error-text').textContent='Usuario o contraseña incorrectos.';return;}
+  err.classList.remove('show');
+  session=user;
+  seedIfEmpty();
+  enterApp();
+}
+$('l-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+$('l-user').addEventListener('keydown',e=>{ if(e.key==='Enter') $('l-pass').focus(); });
+
+function doLogout(){
+  session=null;
+  $('view-login').classList.add('active');
+  $('app-shell').classList.remove('active');
+  $('l-user').value=''; $('l-pass').value='';
+}
+
+function enterApp(){
+  $('view-login').classList.remove('active');
+  $('app-shell').classList.add('active');
+  // Sidebar usuario
+  $('sb-avatar').textContent = session.nombre.charAt(0).toUpperCase();
+  $('sb-nombre').textContent = session.nombre;
+  $('sb-rol-tag').textContent = session.rol==='abogado'?'Senior Partner':'Asistente Legal';
+  // Mostrar nav correcto
+  $('nav-abogado').style.display   = session.rol==='abogado'   ?'flex':'none';
+  $('nav-secretaria').style.display= session.rol==='secretaria'?'flex':'none';
+  // Ir al dashboard del rol
+  if(session.rol==='abogado') goPage('a-dashboard');
+  else goPage('s-dashboard');
+}
+
+// ─── ROUTER ──────────────────────────────────────────────────
+let currentPage='';
+const PAGES={
+  'a-dashboard': { title:'Dashboard', sub:'Resumen estratégico de su actividad profesional', actions:accionesADash, render:renderADash },
+  'a-casos':     { title:'Mis Casos', sub:'Expedientes asignados con notas estratégicas', actions:accionesACasos, render:renderACasos },
+  'a-agenda':    { title:'Mi Agenda', sub:'Audiencias y reuniones personales', actions:accionesAAgenda, render:renderAAgenda },
+  'a-clientes':  { title:'Clientes', sub:'Cartera de clientes asignados', actions:accionesAClientes, render:renderAClientes },
+  'a-documentos':{ title:'Documentación', sub:'Biblioteca de escritos y documentos digitalizados del estudio', actions:accionesADocs, render:renderADocs },
+  'a-facturacion':{ title:'Facturación', sub:'Control de honorarios e ingresos del estudio', actions:accionesAFacturacion, render:renderAFacturacion },
+  's-dashboard': { title:'Dashboard Diario', sub:'Operaciones del día y tareas del estudio', actions:accionesSdash, render:renderSDash },
+  's-agenda':    { title:'Agenda General', sub:'Calendario centralizado del estudio', actions:accionesSAgenda, render:renderSAgenda },
+  's-casos':     { title:'Gestión de Casos', sub:'Panel operativo de expedientes', actions:accionesSCasos, render:renderSCasos },
+  's-clientes':  { title:'Alta de Clientes', sub:'Ficha de contacto y asignación de abogado', actions:accionesSClientes, render:renderSClientes },
+  's-caja':      { title:'Caja / Gestión Financiera', sub:'Movimientos, saldo y transacciones del estudio', actions:accionesSCaja, render:renderSCaja },
+};
+
+function goPage(id, btn){
+  if(currentPage===id) return;
+  currentPage=id;
+  const pg=PAGES[id];
+  if(!pg) return;
+  $('pg-title').textContent = pg.title;
+  $('pg-subtitle').textContent = pg.sub;
+  $('pg-actions').innerHTML = pg.actions();
+  $('pg-body').innerHTML = pg.render();
+  // Nav active
+  document.querySelectorAll('.sb-nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else {
+    const b=document.querySelector(`.sb-nav-item[data-page="${id}"]`);
+    if(b) b.classList.add('active');
+  }
+  // Post-render hooks
+  if(id==='a-casos')     postRenderACasos();
+  if(id==='a-agenda')    postRenderAAgenda();
+  if(id==='a-clientes')  postRenderAClientes();
+  if(id==='a-documentos')postRenderADocs();
+  if(id==='a-facturacion')postRenderAFacturacion();
+  if(id==='s-dashboard') postRenderSDash();
+  if(id==='s-agenda')    postRenderSAgenda();
+  if(id==='s-casos')     postRenderSCasos();
+  if(id==='s-clientes')  postRenderSClientes();
+  if(id==='s-caja')      postRenderSCaja();
+  if(id==='a-dashboard') postRenderADash();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function accionesADash(){
+  return `<button class="btn btn-primary" onclick="refreshADash()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    Actualizar
+  </button>`;
+}
+function renderADash(){
+  return `
+  <div class="bento mb6" id="a-kpis">
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Casos Activos</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div><div class="kpi-val" id="ak-casos">—</div><div class="kpi-meta">expedientes en curso</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Honorarios</div><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-val income" id="ak-hon">—</div><div class="kpi-meta">ingresados en el período</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Audiencias Pendientes</div><div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div><div class="kpi-val" id="ak-aud">—</div><div class="kpi-meta">en agenda próxima</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Clientes</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="kpi-val" id="ak-cli">—</div><div class="kpi-meta">clientes asignados</div></div></div>
+  </div>
+  <div class="bento">
+    <div class="c6"><div class="card">
+      <div class="card-header"><h2 class="card-title">Audiencias Próximas</h2></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Evento</th><th>Expediente</th><th>Fecha</th><th>Tipo</th><th>Estado</th></tr></thead>
+        <tbody id="ak-tbody-aud"></tbody>
+      </table></div>
+    </div></div>
+    <div class="c6"><div class="card">
+      <div class="card-header"><h2 class="card-title">Causas Activas</h2></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Expediente</th><th>Causa</th><th>Cliente</th><th>Estado</th></tr></thead>
+        <tbody id="ak-tbody-casos"></tbody>
+      </table></div>
+    </div></div>
+  </div>`;
+}
+function postRenderADash(){ refreshADash(); }
+function refreshADash(){
+  const uid=session.id;
+  const casos=DB.get('casos').filter(c=>(c.abogado_id===uid)&&['activo','en_curso'].includes(c.estado));
+  const movs=DB.get('movimientos').filter(m=>m.tipo==='ingreso'&&m.user_id===uid);
+  const aud=DB.get('audiencias');
+  const clis=DB.get('clientes').filter(c=>c.abogado_id===uid);
+  $('ak-casos').textContent=casos.length;
+  $('ak-hon').textContent=fmt(movs.reduce((s,m)=>s+m.monto,0));
+  const audMias=aud.filter(a=>{
+    if(!a.caso_id) return false;
+    const c=DB.get('casos').find(x=>x.id===a.caso_id);
+    return c&&c.abogado_id===uid&&a.estado==='pendiente';
+  });
+  $('ak-aud').textContent=audMias.length;
+  $('ak-cli').textContent=clis.length;
+  // Tabla audiencias
+  const allAud=aud.filter(a=>{
+    if(!a.caso_id) return true;
+    const c=DB.get('casos').find(x=>x.id===a.caso_id);
+    return c&&c.abogado_id===uid;
+  }).slice(0,5);
+  const tb1=$('ak-tbody-aud');
+  if(tb1) tb1.innerHTML=allAud.length?allAud.map(a=>{
+    const c=a.caso_id?DB.get('casos').find(x=>x.id===a.caso_id):null;
+    return `<tr><td style="font-weight:500;">${a.titulo}</td><td class="td-m">${c?c.exp:'—'}</td><td class="td-m" style="white-space:nowrap;">${fmtDT(a.fecha)}</td><td>${tipoBadge(a.tipo)}</td><td>${estadoBadge(a.estado)}</td></tr>`;
+  }).join(''):emptyRow('Sin audiencias próximas');
+  // Tabla casos
+  const tb2=$('ak-tbody-casos');
+  if(tb2) tb2.innerHTML=casos.slice(0,5).length?casos.slice(0,5).map(c=>{
+    const cl=DB.get('clientes').find(x=>x.id===c.cliente_id);
+    return `<tr><td><span style="font-size:.75rem;font-weight:700;color:var(--accent);">${c.exp}</span></td><td style="font-size:.8125rem;">${c.titulo}</td><td class="td-m">${cl?cl.nombre:'—'}</td><td>${estadoBadge(c.estado)}</td></tr>`;
+  }).join(''):emptyRow('Sin causas activas');
+  Toast.ok('Dashboard actualizado','Los KPIs reflejan los datos más recientes.');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — CASOS
+// ══════════════════════════════════════════════════════════════
+function accionesACasos(){
+  return `<input class="form-control search-input" style="width:240px;padding-left:.75rem;" id="srch-casos" placeholder="Buscar expediente..." oninput="filtrarACasos()">
+  <button class="btn btn-primary" onclick="abrirFormCaso()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo Caso</button>`;
+}
+function renderACasos(){ return `<div id="lista-casos"></div>`; }
+function postRenderACasos(){ filtrarACasos(); }
+function filtrarACasos(){
+  const q=($('srch-casos')||{value:''}).value.toLowerCase();
+  const uid=session.id;
+  let casos=DB.get('casos').filter(c=>c.abogado_id===uid);
+  if(q) casos=casos.filter(c=>c.exp.toLowerCase().includes(q)||c.titulo.toLowerCase().includes(q));
+  const cont=$('lista-casos');
+  if(!cont) return;
+  if(!casos.length){ cont.innerHTML=`<div class="empty" style="padding:4rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div class="empty-title">Sin expedientes</div><div class="empty-desc">Creá tu primer expediente arriba.</div></div>`; return; }
+  cont.innerHTML=casos.map(c=>{
+    const cl=DB.get('clientes').find(x=>x.id===c.cliente_id);
+    return `<div class="caso-card" id="cc-${c.id}">
+      <div class="caso-hdr" onclick="this.parentElement.classList.toggle('exp')">
+        <div><div class="caso-exp">${c.exp}</div><div class="caso-titulo">${c.titulo}</div><div style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;">${cl?cl.nombre:'—'}</div></div>
+        <div class="flex items-center gap-2">
+          ${estadoBadge(c.estado)}
+          <button class="btn btn-icon" onclick="event.stopPropagation();ciclarEstado(${c.id})" title="Cambiar estado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn btn-icon" style="color:var(--expense);" onclick="event.stopPropagation();eliminarCaso(${c.id})" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+          <span class="expand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+        </div>
+      </div>
+      <div class="caso-body">
+        <div style="font-size:.8125rem;color:var(--text-sec);margin-bottom:.875rem;"><strong>Descripción:</strong> ${c.desc||'<em style="color:var(--text-muted)">Sin descripción</em>'}</div>
+        <div class="nota-box">
+          <label>⚖ Nota Estratégica (privada)</label>
+          <textarea id="nota-${c.id}" rows="3" placeholder="Estrategia, riesgos, próximos pasos...">${c.nota||''}</textarea>
+          <div style="text-align:right;margin-top:.5rem;">
+            <button class="btn btn-sm" style="background:rgba(59,125,216,.2);color:#93c5fd;border:1px solid rgba(59,125,216,.3);" onclick="guardarNota(${c.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+              Guardar Nota
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirFormCaso(){
+  const clis=DB.get('clientes').filter(c=>c.abogado_id===session.id);
+  $('mf-title').textContent='Nuevo Expediente';
+  $('mf-body').innerHTML=`
+    <div class="form-row"><div class="form-group"><label class="form-label">Nº Expediente *</label><input class="form-control" id="fc-exp" placeholder="EXP-2026-000"></div><div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fc-estado"><option value="activo">Activo</option><option value="en_curso">En Curso</option></select></div></div>
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="fc-titulo" placeholder="Ej: García vs. Municipalidad..."></div>
+    <div class="form-group"><label class="form-label">Cliente</label><select class="form-control" id="fc-cli"><option value="">— Sin cliente —</option>${clis.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="fc-desc" rows="2"></textarea></div>
+    <div class="form-group"><label class="form-label">Nota Estratégica (privada)</label><textarea class="form-control" id="fc-nota" rows="2"></textarea></div>`;
+  $('mf-submit').onclick=guardarFormCaso;
+  $('mf-submit').textContent='Guardar Expediente';
+  openModal('modal-form');
+}
+
+function guardarFormCaso(){
+  const exp=$('fc-exp').value.trim();
+  const titulo=$('fc-titulo').value.trim();
+  if(!exp||!titulo){ Toast.warn('Campos requeridos','Completá número de expediente y título.'); return; }
+  const casos=DB.get('casos');
+  const nuevo={
+    id:DB.nextId('casos'), exp, titulo,
+    desc:$('fc-desc').value,
+    nota:$('fc-nota').value,
+    cliente_id:parseInt($('fc-cli').value)||null,
+    abogado_id:session.id,
+    estado:$('fc-estado').value,
+    created:new Date().toISOString().split('T')[0]
+  };
+  casos.unshift(nuevo);
+  DB.set('casos',casos);
+  closeModal('modal-form');
+  filtrarACasos();
+  Toast.ok('Expediente creado',`${exp} — ${titulo}`);
+}
+
+function ciclarEstado(id){
+  const estados=['activo','en_curso','cerrado','archivado'];
+  const casos=DB.get('casos');
+  const idx=casos.findIndex(c=>c.id===id);
+  if(idx===-1) return;
+  const actual=estados.indexOf(casos[idx].estado);
+  casos[idx].estado=estados[(actual+1)%estados.length];
+  DB.set('casos',casos);
+  filtrarACasos();
+  Toast.info('Estado actualizado',`Expediente marcado como: ${casos[idx].estado.replace('_',' ')}`);
+}
+
+function guardarNota(id){
+  const nota=($('nota-'+id)||{value:''}).value;
+  const casos=DB.get('casos');
+  const idx=casos.findIndex(c=>c.id===id);
+  if(idx!==-1){ casos[idx].nota=nota; DB.set('casos',casos); }
+  Toast.ok('Nota guardada','La nota estratégica fue actualizada.');
+}
+
+function eliminarCaso(id){
+  if(!confirm('¿Eliminar este expediente?')) return;
+  DB.set('casos',DB.get('casos').filter(c=>c.id!==id));
+  filtrarACasos();
+  Toast.ok('Expediente eliminado');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — AGENDA
+// ══════════════════════════════════════════════════════════════
+function accionesAAgenda(){
+  return `<select class="form-control" id="fil-tipo-a" style="width:auto;" onchange="renderTablaAgenda()">
+    <option value="">Todos los tipos</option><option value="audiencia">Audiencias</option><option value="reunion">Reuniones</option><option value="recepcion">Recepciones</option>
+  </select>
+  <button class="btn btn-primary" onclick="abrirFormAudiencia(false)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva Entrada</button>`;
+}
+function renderAAgenda(){ return `<div class="card"><div class="card-header"><h2 class="card-title">Agenda de Audiencias y Reuniones</h2><span class="badge b-blue" id="cnt-aud">—</span></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Expediente</th><th>Fecha y Hora</th><th>Tipo</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-agenda"></tbody></table></div></div>`; }
+function postRenderAAgenda(){ renderTablaAgenda(); }
+
+function getAudienciasMias(){
+  const uid=session.id;
+  const casosMios=DB.get('casos').filter(c=>c.abogado_id===uid).map(c=>c.id);
+  return DB.get('audiencias').filter(a=>!a.caso_id||casosMios.includes(a.caso_id));
+}
+
+function renderTablaAgenda(){
+  const tipo=($('fil-tipo-a')||{value:''}).value;
+  let items=getAudienciasMias();
+  if(tipo) items=items.filter(a=>a.tipo===tipo);
+  items.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const cnt=$('cnt-aud'), tb=$('tb-agenda');
+  if(cnt) cnt.textContent=`${items.length} evento${items.length!==1?'s':''}`;
+  if(!tb) return;
+  tb.innerHTML=items.length?items.map(a=>{
+    const c=a.caso_id?DB.get('casos').find(x=>x.id===a.caso_id):null;
+    return `<tr>
+      <td style="font-weight:500;">${a.titulo}</td>
+      <td class="td-m">${c?c.exp:'—'}</td>
+      <td class="td-m" style="white-space:nowrap;">${fmtDT(a.fecha)}</td>
+      <td>${tipoBadge(a.tipo)}</td><td>${estadoBadge(a.estado)}</td>
+      <td style="text-align:right;">
+        <div class="flex items-center justify-end gap-2">
+          <button class="btn btn-icon" onclick="editarAudiencia(${a.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn btn-icon" style="color:var(--expense);" onclick="eliminarAudiencia(${a.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+        </div>
+      </td></tr>`;
+  }).join(''):emptyRow('Sin entradas en la agenda');
+}
+
+function abrirFormAudiencia(idEdit){
+  const uid=session.id;
+  const casosMios=DB.get('casos').filter(c=>c.abogado_id===uid);
+  const a=idEdit?DB.get('audiencias').find(x=>x.id===idEdit):null;
+  $('mf-title').textContent=a?'Editar Entrada':'Nueva Entrada de Agenda';
+  const fechaVal=a?a.fecha.slice(0,16):'';
+  $('mf-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="fa-titulo" value="${a?a.titulo:''}" placeholder="Ej: Audiencia de Vista de Causa"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="fa-tipo">${['audiencia','reunion','recepcion'].map(t=>`<option value="${t}"${a&&a.tipo===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fa-estado">${['pendiente','confirmada','cancelada','realizada'].map(s=>`<option value="${s}"${a&&a.estado===s?' selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha y Hora *</label><input class="form-control" type="datetime-local" id="fa-fecha" value="${fechaVal}"></div>
+    <div class="form-group"><label class="form-label">Expediente (opcional)</label><select class="form-control" id="fa-caso"><option value="">— Sin expediente —</option>${casosMios.map(c=>`<option value="${c.id}"${a&&a.caso_id===c.id?' selected':''}>${c.exp} — ${c.titulo}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Descripción / Lugar</label><textarea class="form-control" id="fa-desc" rows="2">${a?a.desc:''}</textarea></div>`;
+  $('mf-submit').onclick=()=>guardarAudiencia(idEdit||null);
+  $('mf-submit').textContent=a?'Guardar cambios':'Guardar';
+  openModal('modal-form');
+}
+
+function guardarAudiencia(idEdit){
+  const titulo=$('fa-titulo').value.trim();
+  const fecha=$('fa-fecha').value;
+  if(!titulo||!fecha){ Toast.warn('Campos requeridos','Completá título y fecha/hora.'); return; }
+  const items=DB.get('audiencias');
+  const obj={titulo,tipo:$('fa-tipo').value,estado:$('fa-estado').value,fecha,caso_id:parseInt($('fa-caso').value)||null,desc:$('fa-desc').value};
+  if(idEdit){
+    const idx=items.findIndex(a=>a.id===idEdit);
+    if(idx!==-1) Object.assign(items[idx],obj);
+    Toast.ok('Entrada actualizada',titulo);
+  } else {
+    items.unshift({id:DB.nextId('audiencias'),...obj});
+    Toast.ok('Entrada creada',titulo);
+  }
+  DB.set('audiencias',items);
+  closeModal('modal-form');
+  if(currentPage.includes('agenda')) { if(currentPage==='a-agenda') renderTablaAgenda(); else renderTablaAgendaSec(); }
+}
+
+function editarAudiencia(id){ abrirFormAudiencia(id); }
+function eliminarAudiencia(id){
+  if(!confirm('¿Eliminar esta entrada?')) return;
+  DB.set('audiencias',DB.get('audiencias').filter(a=>a.id!==id));
+  if(currentPage==='a-agenda') renderTablaAgenda(); else renderTablaAgendaSec();
+  Toast.ok('Entrada eliminada');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — CLIENTES
+// ══════════════════════════════════════════════════════════════
+function accionesAClientes(){
+  return `<input class="form-control" style="width:220px;" id="srch-cli-a" placeholder="Buscar cliente..." oninput="renderTablaCliA()">`;
+}
+function renderAClientes(){ return `<div class="card"><div class="card-header"><h2 class="card-title">Cartera de Clientes</h2><span class="badge b-blue" id="cnt-cli-a">—</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>DNI/CUIT</th><th>Teléfono</th><th>Email</th><th>Dirección</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-cli-a"></tbody></table></div></div>`; }
+function postRenderAClientes(){ renderTablaCliA(); }
+function renderTablaCliA(){
+  const q=($('srch-cli-a')||{value:''}).value.toLowerCase();
+  let items=DB.get('clientes').filter(c=>c.abogado_id===session.id);
+  if(q) items=items.filter(c=>c.nombre.toLowerCase().includes(q)||(c.dni||'').includes(q)||(c.email||'').toLowerCase().includes(q));
+  const tb=$('tb-cli-a'), cnt=$('cnt-cli-a');
+  if(cnt) cnt.textContent=`${items.length} cliente${items.length!==1?'s':''}`;
+  if(!tb) return;
+  tb.innerHTML=items.length?items.map(c=>`<tr>
+    <td><div class="flex items-center gap-2"><div style="width:32px;height:32px;border-radius:var(--r);background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);flex-shrink:0;">${c.nombre.charAt(0).toUpperCase()}</div><span style="font-weight:600;font-size:.8125rem;">${c.nombre}</span></div></td>
+    <td class="td-m">${c.dni||'—'}</td><td class="td-m">${c.tel||'—'}</td><td class="td-m" style="font-size:.75rem;">${c.email||'—'}</td><td class="td-m" style="max-width:140px;font-size:.75rem;">${c.dir||'—'}</td>
+    <td style="text-align:right;"><button class="btn btn-icon" onclick="editarCliente(${c.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
+  </tr>`).join(''):emptyRow('Sin clientes en tu cartera');
+}
+
+function editarCliente(id){
+  const c=DB.get('clientes').find(x=>x.id===id);
+  if(!c) return;
+  $('mf-title').textContent='Editar Cliente';
+  $('mf-body').innerHTML=`
+    <div class="form-row"><div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="ec-nombre" value="${c.nombre}"></div><div class="form-group"><label class="form-label">DNI/CUIT</label><input class="form-control" id="ec-dni" value="${c.dni||''}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="ec-tel" value="${c.tel||''}"></div><div class="form-group"><label class="form-label">Email</label><input class="form-control" id="ec-email" type="email" value="${c.email||''}"></div></div>
+    <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="ec-dir" value="${c.dir||''}"></div>
+    <div class="form-group"><label class="form-label">Notas</label><textarea class="form-control" id="ec-notas" rows="2">${c.notas||''}</textarea></div>`;
+  $('mf-submit').onclick=()=>guardarCliente(id);
+  $('mf-submit').textContent='Guardar cambios';
+  openModal('modal-form');
+}
+
+function guardarCliente(id){
+  const items=DB.get('clientes');
+  const idx=items.findIndex(c=>c.id===id);
+  if(idx===-1) return;
+  Object.assign(items[idx],{nombre:$('ec-nombre').value,dni:$('ec-dni').value,tel:$('ec-tel').value,email:$('ec-email').value,dir:$('ec-dir').value,notas:$('ec-notas').value});
+  DB.set('clientes',items);
+  closeModal('modal-form');
+  if(currentPage==='a-clientes') renderTablaCliA(); else renderTablaCliSec();
+  Toast.ok('Cliente actualizado',items[idx].nombre);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — DOCUMENTACIÓN
+// ══════════════════════════════════════════════════════════════
+function accionesADocs(){
+  return `<select class="form-control" id="fil-doc" style="width:auto;" onchange="renderTablaADocs()"><option value="">Todos los docs</option><option value="digitalizado">Digitalizados</option><option value="pendiente_escaneo">Pendientes</option></select>
+  <button class="btn btn-primary" onclick="abrirFormDoc()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Registrar Documento</button>`;
+}
+function renderADocs(){
+  return `
+  <div class="bento mb6">
+    <div class="c6"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Docs Digitalizados</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div></div><div class="kpi-val" id="dk-ok">—</div><div class="kpi-meta">de <span id="dk-total">—</span> registrados</div></div></div>
+    <div class="c6"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Pendientes Escaneo</div><div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div></div><div class="kpi-val" id="dk-pend">—</div><div class="kpi-meta">a digitalizar</div></div></div>
+  </div>
+  <div class="bento">
+    <div class="c12"><div class="card"><div class="card-header"><h2 class="card-title">Biblioteca de Documentos</h2></div>
+    <div class="table-wrap"><table><thead><tr><th>Documento</th><th>Expediente</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-docs"></tbody></table></div></div></div>
+  </div>`;
+}
+function postRenderADocs(){ calcADocKPIs(); renderTablaADocs(); }
+function calcADocKPIs(){
+  const uid=session.id;
+  const casosMios=DB.get('casos').filter(c=>c.abogado_id===uid).map(c=>c.id);
+  const docs=DB.get('documentos').filter(d=>!d.caso_id||casosMios.includes(d.caso_id));
+  const ok=docs.filter(d=>d.estado==='digitalizado').length;
+  const pend=docs.filter(d=>d.estado==='pendiente_escaneo').length;
+  if($('dk-ok'))  $('dk-ok').textContent=ok;
+  if($('dk-total'))$('dk-total').textContent=docs.length;
+  if($('dk-pend'))$('dk-pend').textContent=pend;
+}
+function renderTablaADocs(){
+  const uid=session.id;
+  const casosMios=DB.get('casos').filter(c=>c.abogado_id===uid).map(c=>c.id);
+  const estado=($('fil-doc')||{value:''}).value;
+  let docs=DB.get('documentos').filter(d=>!d.caso_id||casosMios.includes(d.caso_id));
+  if(estado) docs=docs.filter(d=>d.estado===estado);
+  const tb=$('tb-docs');
+  if(!tb) return;
+  tb.innerHTML=docs.length?docs.map(d=>{
+    const c=d.caso_id?DB.get('casos').find(x=>x.id===d.caso_id):null;
+    return `<tr><td><div class="flex items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="font-weight:500;font-size:.8125rem;">${d.nombre}</span></div></td>
+    <td class="td-m">${c?c.exp:'—'}</td><td class="td-m">${d.tipo||'—'}</td><td>${estadoBadge(d.estado)}</td><td class="td-m">${fmtD(d.created)}</td>
+    <td style="text-align:right;"><div class="flex items-center justify-end gap-1">
+      <button class="btn btn-icon btn-sm" onclick="toggleDoc(${d.id})" title="Cambiar estado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
+      <button class="btn btn-icon btn-sm" style="color:var(--expense);" onclick="eliminarDoc(${d.id})" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+    </div></td></tr>`;
+  }).join(''):emptyRow('Sin documentos registrados');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ABOGADO — FACTURACIÓN
+// ══════════════════════════════════════════════════════════════
+function accionesAFacturacion(){
+  return `
+    <button class="btn btn-primary" onclick="abrirFormMovimiento()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Registrar Movimiento
+    </button>
+    <button class="btn btn-secondary" onclick="postRenderAFacturacion()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Actualizar
+    </button>
+  `;
+}
+function renderAFacturacion(){
+  return `
+  <div class="bento mb6">
+    <div class="c4">
+      <div class="kpi">
+        <div class="kpi-row"><div class="kpi-label">Ingresos Totales</div><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div></div>
+        <div class="kpi-val income" id="fk-ingresos">—</div>
+        <div class="kpi-meta"><span id="fk-cnt-ingresos">—</span> transacciones</div>
+      </div>
+    </div>
+    <div class="c4">
+      <div class="kpi">
+        <div class="kpi-row"><div class="kpi-label">Gastos / Egresos</div><div class="kpi-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div></div>
+        <div class="kpi-val expense" id="fk-egresos">—</div>
+        <div class="kpi-meta"><span id="fk-cnt-egresos">—</span> transacciones</div>
+      </div>
+    </div>
+    <div class="c4">
+      <div class="kpi">
+        <div class="kpi-row"><div class="kpi-label">Saldo Neto</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg></div></div>
+        <div class="kpi-val" id="fk-saldo">—</div>
+        <div class="kpi-meta">balance disponible</div>
+      </div>
+    </div>
+  </div>
+  <div class="bento">
+    <div class="c12"><div class="card"><div class="card-header"><h2 class="card-title">Historial de Caja y Finanzas</h2></div>
+    <div class="table-wrap"><table><thead><tr><th>Descripción</th><th>Categoría</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th style="text-align:right;">Monto</th><th style="text-align:right; width:80px;">Acciones</th></tr></thead><tbody id="fk-tb-hon"></tbody></table></div></div></div>
+  </div>`;
+}
+function postRenderAFacturacion(){
+  const uid=session.id;
+  const movs=DB.get('movimientos').filter(m=>m.user_id===uid);
+  
+  const ingresosList = movs.filter(m=>m.tipo==='ingreso');
+  const egresosList = movs.filter(m=>m.tipo==='egreso');
+  
+  const totalIngresos = ingresosList.reduce((s,m)=>s+m.monto,0);
+  const totalEgresos = egresosList.reduce((s,m)=>s+m.monto,0);
+  const saldoNeto = totalIngresos - totalEgresos;
+  
+  if($('fk-ingresos')) $('fk-ingresos').textContent=fmt(totalIngresos);
+  if($('fk-cnt-ingresos')) $('fk-cnt-ingresos').textContent=`${ingresosList.length} cobro${ingresosList.length!==1?'s':''}`;
+  
+  if($('fk-egresos')) $('fk-egresos').textContent=fmt(totalEgresos);
+  if($('fk-cnt-egresos')) $('fk-cnt-egresos').textContent=`${egresosList.length} pago${egresosList.length!==1?'s':''}`;
+  
+  const saldoEl = $('fk-saldo');
+  if(saldoEl) {
+    saldoEl.textContent=fmt(saldoNeto);
+    if(saldoNeto >= 0) {
+      saldoEl.className = 'kpi-val income';
+    } else {
+      saldoEl.className = 'kpi-val expense';
+    }
+  }
+
+  const tb=$('fk-tb-hon');
+  if(!tb) return;
+  
+  tb.innerHTML=movs.length?movs.map(m=>`<tr>
+    <td style="font-size:.8125rem;font-weight:500;">${m.desc}</td>
+    <td class="td-m" style="text-transform:capitalize;">${(m.cat||'general').replace('_',' ')}</td>
+    <td class="td-m">${fmtD(m.fecha)}</td>
+    <td>${tipoBadge(m.tipo)}</td>
+    <td>${estadoBadge(m.estado)}</td>
+    <td style="text-align:right;font-weight:600;color:${m.tipo==='ingreso'?'var(--income)':'var(--expense)'};white-space:nowrap;">
+      ${m.tipo==='ingreso'?'+':'-'} ${fmt(m.monto)}
+    </td>
+    <td style="text-align:right;">
+      <button class="btn btn-icon btn-sm" style="color:var(--expense);" onclick="eliminarMovimientoMock(${m.id})" title="Eliminar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </td>
+  </tr>`).join(''):emptyRow('Sin movimientos registrados');
+}
+
+function abrirFormMovimiento(){
+  $('mf-title').textContent='Registrar Movimiento';
+  const today = new Date().toISOString().split('T')[0];
+  $('mf-body').innerHTML=`
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Tipo *</label>
+        <select class="form-control" id="fm-tipo">
+          <option value="ingreso">Ingreso (Entrada)</option>
+          <option value="egreso">Egreso (Gasto)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monto ($) *</label>
+        <input class="form-control" type="number" id="fm-monto" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción *</label>
+      <input class="form-control" id="fm-desc" placeholder="Ej: Pago de honorarios, Resma de hojas...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Categoría</label>
+        <input class="form-control" id="fm-cat" placeholder="Ej: honorarios, librería, servicios...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha *</label>
+        <input class="form-control" type="date" id="fm-fecha" value="${today}">
+      </div>
+    </div>`;
+  $('mf-submit').onclick=guardarMovimiento;
+  $('mf-submit').textContent='Registrar';
+  openModal('modal-form');
+}
+
+function guardarMovimiento(){
+  const tipo=$('fm-tipo').value;
+  const monto=parseFloat($('fm-monto').value);
+  const desc=$('fm-desc').value.trim();
+  const cat=$('fm-cat').value.trim()||'general';
+  const fecha=$('fm-fecha').value;
+  if(isNaN(monto)||monto<=0){ Toast.warn('Monto inválido','Ingresá un monto mayor a 0.'); return; }
+  if(!desc){ Toast.warn('Campo requerido','Ingresá una descripción.'); return; }
+  if(!fecha){ Toast.warn('Campo requerido','Ingresá una fecha válida.'); return; }
+  
+  const movs=DB.get('movimientos');
+  const newMov = {
+    id: DB.nextId('movimientos'),
+    tipo,
+    monto,
+    desc,
+    cat,
+    fecha,
+    estado: 'completado',
+    user_id: session.id,
+    created_at: new Date().toISOString()
+  };
+  movs.unshift(newMov);
+  DB.set('movimientos',movs);
+  closeModal('modal-form');
+  postRenderAFacturacion();
+  Toast.ok('Movimiento registrado',desc);
+}
+
+function eliminarMovimientoMock(id){
+  if(!confirm('¿Eliminar este movimiento?')) return;
+  DB.set('movimientos',DB.get('movimientos').filter(m=>m.id!==id));
+  postRenderAFacturacion();
+  Toast.ok('Movimiento eliminado');
+}
+
+
+function abrirFormDoc(){
+  const casosMios=DB.get('casos').filter(c=>c.abogado_id===session.id);
+  $('mf-title').textContent='Registrar Documento';
+  $('mf-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Nombre del archivo *</label><input class="form-control" id="fd-nombre" placeholder="Ej: Escrito_demanda.pdf"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tipo</label><input class="form-control" id="fd-tipo" placeholder="Demanda, Contrato..."></div><div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fd-estado"><option value="pendiente_escaneo">Pendiente de escaneo</option><option value="digitalizado">Digitalizado</option></select></div></div>
+    <div class="form-group"><label class="form-label">Expediente</label><select class="form-control" id="fd-caso"><option value="">— Sin expediente —</option>${casosMios.map(c=>`<option value="${c.id}">${c.exp} — ${c.titulo}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Notas</label><textarea class="form-control" id="fd-notas" rows="2"></textarea></div>`;
+  $('mf-submit').onclick=guardarDoc;
+  $('mf-submit').textContent='Registrar';
+  openModal('modal-form');
+}
+function guardarDoc(){
+  const nombre=$('fd-nombre').value.trim();
+  if(!nombre){ Toast.warn('Campo requerido','Ingresá el nombre del archivo.'); return; }
+  const docs=DB.get('documentos');
+  docs.unshift({id:DB.nextId('documentos'),nombre,tipo:$('fd-tipo').value,estado:$('fd-estado').value,caso_id:parseInt($('fd-caso').value)||null,notas:$('fd-notas').value,created:new Date().toISOString().split('T')[0]});
+  DB.set('documentos',docs);
+  closeModal('modal-form');
+  if(currentPage==='a-documentos'){ renderTablaADocs(); calcADocKPIs(); }
+  Toast.ok('Documento registrado',nombre);
+}
+function toggleDoc(id){
+  const docs=DB.get('documentos');
+  const idx=docs.findIndex(d=>d.id===id);
+  if(idx===-1) return;
+  docs[idx].estado=docs[idx].estado==='digitalizado'?'pendiente_escaneo':'digitalizado';
+  DB.set('documentos',docs);
+  renderTablaADocs(); calcADocKPIs();
+  Toast.info('Estado actualizado',docs[idx].estado==='digitalizado'?'Marcado como digitalizado.':'Marcado como pendiente.');
+}
+function eliminarDoc(id){
+  if(!confirm('¿Eliminar este documento?')) return;
+  DB.set('documentos',DB.get('documentos').filter(d=>d.id!==id));
+  renderTablaADocs(); calcADocKPIs();
+  Toast.ok('Documento eliminado');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECRETARIA — DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function accionesSdash(){
+  return `<button class="btn btn-primary" onclick="abrirFormTarea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva Tarea</button>`;
+}
+function renderSDash(){
+  const tareas=DB.get('tareas').sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;const po={urgente:0,alta:1,normal:2,baja:3};return po[a.prioridad]-po[b.prioridad];});
+  const hoy=new Date().toISOString().split('T')[0];
+  const recep=DB.get('audiencias').filter(a=>a.tipo==='recepcion'&&a.fecha.startsWith(hoy));
+  const casosActivos=DB.get('casos').filter(c=>['activo','en_curso'].includes(c.estado)).length;
+  const pendientes=tareas.filter(t=>!t.done).length;
+  const movs=DB.get('movimientos');
+  const saldo=movs.reduce((s,m)=>s+(m.tipo==='ingreso'?m.monto:-m.monto),0);
+  return `
+  <div class="bento mb6">
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Casos Activos</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div><div class="kpi-val">${casosActivos}</div><div class="kpi-meta">en el estudio</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Tareas Pendientes</div><div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div></div><div class="kpi-val" id="sk-pend">${pendientes}</div><div class="kpi-meta">por completar</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Recepciones Hoy</div><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="kpi-val">${recep.length}</div><div class="kpi-meta">visitas del día</div></div></div>
+    <div class="c3"><div class="kpi"><div class="kpi-row"><div class="kpi-label">Saldo de Caja</div><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div></div><div class="kpi-val ${saldo>=0?'income':'expense'}">${fmt(saldo)}</div><div class="kpi-meta">saldo actual</div></div></div>
+  </div>
+  <div class="bento">
+    <div class="c6"><div class="card" style="height:100%;">
+      <div class="card-header"><h2 class="card-title">Checklist de Tareas</h2><span class="badge b-amber" id="sk-badge">${pendientes} pendiente${pendientes!==1?'s':''}</span></div>
+      <div class="card-body" id="lista-tareas-s">
+        ${tareas.slice(0,10).map(t=>`
+        <div class="task-item${t.done?' done':''}" id="tr-${t.id}">
+          <input type="checkbox" class="task-cb" ${t.done?'checked':''} onchange="toggleTarea(${t.id},this.checked)">
+          <div style="flex:1;"><div class="task-text">${t.desc}</div><div class="task-meta flex items-center gap-2">${priorBadge(t.prioridad)}${t.limite?`<span>· ${t.limite}</span>`:''}</div></div>
+          <button class="btn btn-icon btn-sm" onclick="eliminarTarea(${t.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+        </div>`).join('')||'<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/></svg><div class="empty-title">¡Todo al día!</div></div>'}
+      </div>
+    </div></div>
+    <div class="c6"><div class="card" style="height:100%;">
+      <div class="card-header"><h2 class="card-title">Sala de Espera — Hoy</h2></div>
+      <div class="card-body">
+        ${recep.length?recep.map(r=>`<div class="wait-item"><div class="wait-av">${r.titulo.charAt(0).toUpperCase()}</div><div style="flex:1;"><div style="font-weight:600;font-size:.8125rem;">${r.titulo}</div><div style="font-size:.75rem;color:var(--text-muted);">${fmtDT(r.fecha)}</div>${r.desc?`<div style="font-size:.75rem;color:var(--text-sec);margin-top:.125rem;">${r.desc}</div>`:''}</div>${estadoBadge(r.estado)}</div>`).join(''):'<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div class="empty-title">Sin recepciones hoy</div></div>'}
+      </div>
+    </div></div>
+  </div>`;
+}
+function postRenderSDash(){}
+
+function abrirFormTarea(){
+  $('mf-title').textContent='Nueva Tarea';
+  $('mf-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Descripción *</label><input class="form-control" id="ft-desc" placeholder="Ej: Preparar escrito de contestación..."></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Prioridad</label><select class="form-control" id="ft-prio"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option><option value="baja">Baja</option></select></div><div class="form-group"><label class="form-label">Fecha límite</label><input class="form-control" type="date" id="ft-fecha"></div></div>`;
+  $('mf-submit').onclick=guardarTarea;
+  $('mf-submit').textContent='Agregar Tarea';
+  openModal('modal-form');
+}
+function guardarTarea(){
+  const desc=$('ft-desc').value.trim();
+  if(!desc){ Toast.warn('Campo requerido','Ingresá la descripción.'); return; }
+  const tareas=DB.get('tareas');
+  const nueva={id:DB.nextId('tareas'),desc,done:false,prioridad:$('ft-prio').value,limite:$('ft-fecha').value};
+  tareas.unshift(nueva);
+  DB.set('tareas',tareas);
+  closeModal('modal-form');
+  if(currentPage==='s-dashboard') goPage('s-dashboard');
+  Toast.ok('Tarea creada',desc);
+}
+function toggleTarea(id,checked){
+  const tareas=DB.get('tareas');
+  const idx=tareas.findIndex(t=>t.id===id);
+  if(idx===-1) return;
+  tareas[idx].done=checked;
+  DB.set('tareas',tareas);
+  const row=$(`tr-${id}`);
+  if(row) row.classList.toggle('done',checked);
+  // Actualizar badge y KPI
+  const pend=tareas.filter(t=>!t.done).length;
+  const b=$('sk-badge'), k=$('sk-pend');
+  if(b) b.textContent=`${pend} pendiente${pend!==1?'s':''}`;
+  if(k) k.textContent=pend;
+  Toast.ok(checked?'Tarea completada':'Tarea reabierta',checked?'¡Bien hecho!':'Tarea marcada como pendiente.');
+}
+function eliminarTarea(id){
+  DB.set('tareas',DB.get('tareas').filter(t=>t.id!==id));
+  const row=$(`tr-${id}`);
+  if(row) row.remove();
+  Toast.ok('Tarea eliminada');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECRETARIA — AGENDA GENERAL
+// ══════════════════════════════════════════════════════════════
+function accionesSAgenda(){
+  return `<select class="form-control" id="fil-tipo-s" style="width:auto;" onchange="renderTablaAgendaSec()"><option value="">Todos los tipos</option><option value="audiencia">Audiencias</option><option value="reunion">Reuniones</option><option value="recepcion">Recepciones</option></select>
+  <select class="form-control" id="fil-est-s" style="width:auto;" onchange="renderTablaAgendaSec()"><option value="">Todos los estados</option><option value="pendiente">Pendiente</option><option value="confirmada">Confirmada</option><option value="cancelada">Cancelada</option><option value="realizada">Realizada</option></select>
+  <button class="btn btn-primary" onclick="abrirFormAudienciaSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva Entrada</button>`;
+}
+function renderSAgenda(){
+  return `
+  <div class="bento mb4">
+    <div class="c3"><div class="kpi" style="padding:1rem;"><div class="kpi-label">Audiencias</div><div class="kpi-val" id="sk-au" style="font-size:1.5rem;">—</div></div></div>
+    <div class="c3"><div class="kpi" style="padding:1rem;"><div class="kpi-label">Reuniones</div><div class="kpi-val" id="sk-re" style="font-size:1.5rem;">—</div></div></div>
+    <div class="c3"><div class="kpi" style="padding:1rem;"><div class="kpi-label">Recepciones</div><div class="kpi-val" id="sk-rc" style="font-size:1.5rem;">—</div></div></div>
+    <div class="c3"><div class="kpi" style="padding:1rem;"><div class="kpi-label">Confirmadas</div><div class="kpi-val income" id="sk-cf" style="font-size:1.5rem;">—</div></div></div>
+  </div>
+  <div class="card"><div class="card-header"><h2 class="card-title">Agenda Completa del Estudio</h2><span class="badge b-blue" id="cnt-aud-s">—</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Evento</th><th>Expediente</th><th>Fecha y Hora</th><th>Tipo</th><th>Estado</th><th>Descripción</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-agenda-s"></tbody></table></div></div>`;
+}
+function postRenderSAgenda(){ renderTablaAgendaSec(); }
+function renderTablaAgendaSec(){
+  const tipo=($('fil-tipo-s')||{value:''}).value;
+  const est=($('fil-est-s')||{value:''}).value;
+  let items=DB.get('audiencias');
+  if(tipo) items=items.filter(a=>a.tipo===tipo);
+  if(est)  items=items.filter(a=>a.estado===est);
+  items.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const all=DB.get('audiencias');
+  if($('sk-au')) $('sk-au').textContent=all.filter(a=>a.tipo==='audiencia').length;
+  if($('sk-re')) $('sk-re').textContent=all.filter(a=>a.tipo==='reunion').length;
+  if($('sk-rc')) $('sk-rc').textContent=all.filter(a=>a.tipo==='recepcion').length;
+  if($('sk-cf')) $('sk-cf').textContent=all.filter(a=>a.estado==='confirmada').length;
+  const cnt=$('cnt-aud-s'),tb=$('tb-agenda-s');
+  if(cnt) cnt.textContent=`${items.length} entrada${items.length!==1?'s':''}`;
+  if(!tb) return;
+  tb.innerHTML=items.length?items.map(a=>{
+    const c=a.caso_id?DB.get('casos').find(x=>x.id===a.caso_id):null;
+    return `<tr><td style="font-weight:500;">${a.titulo}</td><td class="td-m">${c?c.exp:'—'}</td><td class="td-m" style="white-space:nowrap;">${fmtDT(a.fecha)}</td><td>${tipoBadge(a.tipo)}</td><td>${estadoBadge(a.estado)}</td><td class="td-m" style="max-width:150px;font-size:.75rem;">${a.desc||'—'}</td>
+    <td style="text-align:right;"><div class="flex items-center justify-end gap-1">
+      <button class="btn btn-icon" onclick="abrirFormAudienciaSec(${a.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="btn btn-icon" style="color:var(--expense);" onclick="eliminarAudiencia(${a.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+    </div></td></tr>`;
+  }).join(''):emptyRow('Sin entradas en la agenda');
+}
+
+function abrirFormAudienciaSec(idEdit){
+  const casos=DB.get('casos');
+  const a=idEdit?DB.get('audiencias').find(x=>x.id===idEdit):null;
+  $('mf-title').textContent=a?'Editar Entrada':'Nueva Entrada de Agenda';
+  const fechaVal=a?a.fecha.slice(0,16):'';
+  $('mf-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="fas-titulo" value="${a?a.titulo:''}" placeholder="Ej: Recepción — Nuevo cliente"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="fas-tipo">${['recepcion','audiencia','reunion'].map(t=>`<option value="${t}"${a&&a.tipo===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fas-estado">${['pendiente','confirmada','cancelada','realizada'].map(s=>`<option value="${s}"${a&&a.estado===s?' selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha y Hora *</label><input class="form-control" type="datetime-local" id="fas-fecha" value="${fechaVal}"></div>
+    <div class="form-group"><label class="form-label">Expediente (opcional)</label><select class="form-control" id="fas-caso"><option value="">— Sin expediente —</option>${casos.map(c=>`<option value="${c.id}"${a&&a.caso_id===c.id?' selected':''}>${c.exp} — ${c.titulo}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Descripción / Lugar</label><textarea class="form-control" id="fas-desc" rows="2">${a?a.desc:''}</textarea></div>`;
+  $('mf-submit').onclick=()=>guardarAudienciaSec(idEdit||null);
+  $('mf-submit').textContent=a?'Guardar cambios':'Guardar';
+  openModal('modal-form');
+}
+function guardarAudienciaSec(idEdit){
+  const titulo=$('fas-titulo').value.trim();
+  const fecha=$('fas-fecha').value;
+  if(!titulo||!fecha){ Toast.warn('Campos requeridos','Completá título y fecha/hora.'); return; }
+  const items=DB.get('audiencias');
+  const obj={titulo,tipo:$('fas-tipo').value,estado:$('fas-estado').value,fecha,caso_id:parseInt($('fas-caso').value)||null,desc:$('fas-desc').value};
+  if(idEdit){
+    const idx=items.findIndex(a=>a.id===idEdit);
+    if(idx!==-1) Object.assign(items[idx],obj);
+    Toast.ok('Entrada actualizada',titulo);
+  } else {
+    items.unshift({id:DB.nextId('audiencias'),...obj});
+    Toast.ok('Entrada creada',titulo);
+  }
+  DB.set('audiencias',items);
+  closeModal('modal-form');
+  renderTablaAgendaSec();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECRETARIA — CASOS
+// ══════════════════════════════════════════════════════════════
+function accionesSCasos(){
+  return `<input class="form-control" style="width:200px;" id="srch-casos-s" placeholder="Buscar caso..." oninput="renderTablaCasosSec()">
+  <select class="form-control" id="fil-est-c" style="width:auto;" onchange="renderTablaCasosSec()"><option value="">Todos</option><option value="activo">Activo</option><option value="en_curso">En Curso</option><option value="cerrado">Cerrado</option><option value="archivado">Archivado</option></select>
+  <button class="btn btn-secondary" onclick="abrirFormDocSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Cargar Doc.</button>
+  <button class="btn btn-primary" onclick="abrirFormCasoSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo Caso</button>`;
+}
+function renderSCasos(){ return `<div class="card"><div class="card-header"><h2 class="card-title">Todos los Expedientes</h2><span class="badge b-blue" id="cnt-casos-s">—</span></div><div class="table-wrap"><table><thead><tr><th>Expediente</th><th>Causa</th><th>Cliente</th><th>Abogado</th><th>Estado</th><th>Alta</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-casos-s"></tbody></table></div></div>`; }
+function postRenderSCasos(){ renderTablaCasosSec(); }
+function renderTablaCasosSec(){
+  const q=($('srch-casos-s')||{value:''}).value.toLowerCase();
+  const est=($('fil-est-c')||{value:''}).value;
+  let items=DB.get('casos');
+  if(est) items=items.filter(c=>c.estado===est);
+  if(q)   items=items.filter(c=>c.exp.toLowerCase().includes(q)||c.titulo.toLowerCase().includes(q));
+  const tb=$('tb-casos-s'),cnt=$('cnt-casos-s');
+  if(cnt) cnt.textContent=`${items.length} expediente${items.length!==1?'s':''}`;
+  if(!tb) return;
+  const clis=DB.get('clientes'), abogs=USERS;
+  tb.innerHTML=items.length?items.map(c=>{
+    const cl=clis.find(x=>x.id===c.cliente_id);
+    const ab=abogs.find(x=>x.id===c.abogado_id);
+    return `<tr>
+      <td><span style="font-size:.75rem;font-weight:700;color:var(--accent);">${c.exp}</span></td>
+      <td style="font-weight:500;font-size:.8125rem;max-width:180px;">${c.titulo}</td>
+      <td class="td-m">${cl?cl.nombre:'—'}</td>
+      <td class="td-m">${ab?ab.nombre:'—'}</td>
+      <td>${estadoBadge(c.estado)}</td>
+      <td class="td-m">${fmtD(c.created)}</td>
+      <td style="text-align:right;"><div class="flex items-center justify-end gap-1">
+        <button class="btn btn-icon" onclick="abrirFormCasoSec(${c.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="btn btn-icon" style="color:var(--expense);" onclick="eliminarCasoSec(${c.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join(''):emptyRow('Sin expedientes');
+}
+function abrirFormCasoSec(idEdit){
+  const c=idEdit?DB.get('casos').find(x=>x.id===idEdit):null;
+  const clis=DB.get('clientes');
+  $('mf-title').textContent=c?'Editar Expediente':'Nuevo Expediente';
+  $('mf-body').innerHTML=`
+    <div class="form-row"><div class="form-group"><label class="form-label">Nº Expediente *</label><input class="form-control" id="fcs-exp" value="${c?c.exp:''}" placeholder="EXP-2026-000"></div><div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fcs-est">${['activo','en_curso','cerrado','archivado'].map(s=>`<option value="${s}"${c&&c.estado===s?' selected':''}>${s.replace('_',' ')}</option>`).join('')}</select></div></div>
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="fcs-tit" value="${c?c.titulo:''}" placeholder="Ej: García vs. Banco..."></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Cliente</label><select class="form-control" id="fcs-cli"><option value="">— Sin cliente —</option>${clis.map(cl=>`<option value="${cl.id}"${c&&c.cliente_id===cl.id?' selected':''}>${cl.nombre}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Abogado</label><select class="form-control" id="fcs-ab">${USERS.filter(u=>u.rol==='abogado').map(u=>`<option value="${u.id}"${c&&c.abogado_id===u.id?' selected':''}>${u.nombre}</option>`).join('')}</select></div></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="fcs-desc" rows="2">${c?c.desc:''}</textarea></div>`;
+  $('mf-submit').onclick=()=>guardarCasoSec(idEdit||null);
+  $('mf-submit').textContent=c?'Guardar cambios':'Guardar Expediente';
+  openModal('modal-form');
+}
+function guardarCasoSec(idEdit){
+  const exp=$('fcs-exp').value.trim(), titulo=$('fcs-tit').value.trim();
+  if(!exp||!titulo){ Toast.warn('Campos requeridos','Completá expediente y título.'); return; }
+  const casos=DB.get('casos');
+  const obj={exp,titulo,estado:$('fcs-est').value,cliente_id:parseInt($('fcs-cli').value)||null,abogado_id:parseInt($('fcs-ab').value)||null,desc:$('fcs-desc').value};
+  if(idEdit){
+    const idx=casos.findIndex(c=>c.id===idEdit);
+    if(idx!==-1) Object.assign(casos[idx],obj);
+    Toast.ok('Expediente actualizado',titulo);
+  } else {
+    casos.unshift({id:DB.nextId('casos'),...obj,nota:'',created:new Date().toISOString().split('T')[0]});
+    Toast.ok('Expediente creado',exp);
+  }
+  DB.set('casos',casos);
+  closeModal('modal-form');
+  renderTablaCasosSec();
+}
+function eliminarCasoSec(id){
+  if(!confirm('¿Eliminar este expediente?')) return;
+  DB.set('casos',DB.get('casos').filter(c=>c.id!==id));
+  renderTablaCasosSec();
+  Toast.ok('Expediente eliminado');
+}
+function abrirFormDocSec(){
+  const casos=DB.get('casos');
+  $('mf-title').textContent='Cargar Documento';
+  $('mf-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Nombre del archivo *</label><input class="form-control" id="fds-nombre" placeholder="Ej: Escrito_demanda.pdf"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Expediente</label><select class="form-control" id="fds-caso"><option value="">— Sin expediente —</option>${casos.map(c=>`<option value="${c.id}">${c.exp} — ${c.titulo}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Estado</label><select class="form-control" id="fds-est"><option value="pendiente_escaneo">Pendiente de escaneo</option><option value="digitalizado">Digitalizado</option></select></div></div>
+    <div class="form-group"><label class="form-label">Tipo</label><input class="form-control" id="fds-tipo" placeholder="Demanda, Contrato..."></div>`;
+  $('mf-submit').onclick=guardarDocSec;
+  $('mf-submit').textContent='Cargar Documento';
+  openModal('modal-form');
+}
+function guardarDocSec(){
+  const nombre=$('fds-nombre').value.trim();
+  if(!nombre){ Toast.warn('Campo requerido','Ingresá el nombre del archivo.'); return; }
+  const docs=DB.get('documentos');
+  docs.unshift({id:DB.nextId('documentos'),nombre,tipo:$('fds-tipo').value,estado:$('fds-est').value,caso_id:parseInt($('fds-caso').value)||null,notas:'',created:new Date().toISOString().split('T')[0]});
+  DB.set('documentos',docs);
+  closeModal('modal-form');
+  Toast.ok('Documento cargado',nombre);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECRETARIA — CLIENTES
+// ══════════════════════════════════════════════════════════════
+function accionesSClientes(){
+  return `<input class="form-control" style="width:200px;" id="srch-cli-s" placeholder="Buscar cliente..." oninput="renderTablaCliSec()">
+  <button class="btn btn-primary" onclick="abrirFormClienteSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo Cliente</button>`;
+}
+function renderSClientes(){ return `<div class="card"><div class="card-header"><h2 class="card-title">Directorio de Clientes</h2><span class="badge b-blue" id="cnt-cli-s">—</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>DNI/CUIT</th><th>Teléfono</th><th>Email</th><th>Dirección</th><th>Abogado</th><th style="text-align:right;">Acciones</th></tr></thead><tbody id="tb-cli-s"></tbody></table></div></div>`; }
+function postRenderSClientes(){ renderTablaCliSec(); }
+function renderTablaCliSec(){
+  const q=($('srch-cli-s')||{value:''}).value.toLowerCase();
+  let items=DB.get('clientes');
+  if(q) items=items.filter(c=>c.nombre.toLowerCase().includes(q)||(c.dni||'').includes(q));
+  const tb=$('tb-cli-s'),cnt=$('cnt-cli-s');
+  if(cnt) cnt.textContent=`${items.length} cliente${items.length!==1?'s':''}`;
+  if(!tb) return;
+  const abogs=USERS;
+  tb.innerHTML=items.length?items.map(c=>{
+    const ab=abogs.find(x=>x.id===c.abogado_id);
+    return `<tr>
+      <td><div class="flex items-center gap-2"><div style="width:34px;height:34px;border-radius:var(--r);background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);flex-shrink:0;">${c.nombre.charAt(0).toUpperCase()}</div><span style="font-weight:600;font-size:.8125rem;">${c.nombre}</span></div></td>
+      <td class="td-m">${c.dni||'—'}</td><td class="td-m">${c.tel||'—'}</td><td class="td-m" style="font-size:.75rem;">${c.email||'—'}</td><td class="td-m" style="max-width:130px;font-size:.75rem;">${c.dir||'—'}</td><td class="td-m">${ab?ab.nombre:'—'}</td>
+      <td style="text-align:right;"><div class="flex items-center justify-end gap-1">
+        <button class="btn btn-icon" onclick="abrirFormClienteSec(${c.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="btn btn-icon" style="color:var(--expense);" onclick="eliminarClienteSec(${c.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join(''):emptyRow('Sin clientes registrados');
+}
+function abrirFormClienteSec(idEdit){
+  const c=idEdit?DB.get('clientes').find(x=>x.id===idEdit):null;
+  $('mf-title').textContent=c?'Editar Ficha de Cliente':'Alta de Nuevo Cliente';
+  $('mf-body').innerHTML=`
+    <div class="form-row"><div class="form-group"><label class="form-label">Nombre / Razón Social *</label><input class="form-control" id="fcl-nom" value="${c?c.nombre:''}" placeholder="Ej: Juan Pérez / Constructora ABC S.A."></div><div class="form-group"><label class="form-label">DNI / CUIT *</label><input class="form-control" id="fcl-dni" value="${c?c.dni||'':''}" placeholder="20-12345678-3"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="fcl-tel" type="tel" value="${c?c.tel||'':''}" placeholder="+54 9 11 1234-5678"></div><div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fcl-email" type="email" value="${c?c.email||'':''}" placeholder="contacto@empresa.com"></div></div>
+    <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="fcl-dir" value="${c?c.dir||'':''}" placeholder="Calle, número, localidad"></div>
+    <div class="form-group"><label class="form-label">Abogado asignado *</label><select class="form-control" id="fcl-ab">${USERS.filter(u=>u.rol==='abogado').map(u=>`<option value="${u.id}"${c&&c.abogado_id===u.id?' selected':''}>${u.nombre}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Notas</label><textarea class="form-control" id="fcl-notas" rows="2">${c?c.notas||'':''}</textarea></div>`;
+  $('mf-submit').onclick=()=>guardarClienteSec(idEdit||null);
+  $('mf-submit').textContent=c?'Guardar cambios':'Registrar Cliente';
+  openModal('modal-form');
+}
+function guardarClienteSec(idEdit){
+  const nombre=$('fcl-nom').value.trim(), dni=$('fcl-dni').value.trim();
+  if(!nombre){ Toast.warn('Campo requerido','Ingresá el nombre del cliente.'); return; }
+  const items=DB.get('clientes');
+  const obj={nombre,dni,tel:$('fcl-tel').value,email:$('fcl-email').value,dir:$('fcl-dir').value,abogado_id:parseInt($('fcl-ab').value)||null,notas:$('fcl-notas').value};
+  if(idEdit){
+    const idx=items.findIndex(c=>c.id===idEdit);
+    if(idx!==-1) Object.assign(items[idx],obj);
+    Toast.ok('Cliente actualizado',nombre);
+  } else {
+    items.unshift({id:DB.nextId('clientes'),...obj});
+    Toast.ok('Cliente registrado',nombre);
+  }
+  DB.set('clientes',items);
+  closeModal('modal-form');
+  renderTablaCliSec();
+}
+function eliminarClienteSec(id){
+  if(!confirm('¿Eliminar este cliente?')) return;
+  DB.set('clientes',DB.get('clientes').filter(c=>c.id!==id));
+  renderTablaCliSec();
+  Toast.ok('Cliente eliminado');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECRETARIA — CAJA
+// ══════════════════════════════════════════════════════════════
+function accionesSCaja(){
+  return `<input class="form-control" style="width:200px;" id="srch-mov" placeholder="Buscar..." oninput="renderTablaMov()">
+  <select class="form-control" id="fil-tipo-m" style="width:auto;" onchange="renderTablaMov()"><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select>
+  <button class="btn btn-success" onclick="abrirCaja('ingreso')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Ingreso</button>
+  <button class="btn btn-danger" onclick="abrirCaja('egreso')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>Egreso</button>`;
+}
+function renderSCaja(){
+  const movs=DB.get('movimientos');
+  const ingresos=movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+m.monto,0);
+  const egresos =movs.filter(m=>m.tipo==='egreso').reduce((s,m)=>s+m.monto,0);
+  const saldo=ingresos-egresos;
+  return `
+  <div class="fin-summary">
+    <div class="fin-stat"><div class="fin-label">Saldo Actual</div><div class="fin-val ${saldo>=0?'income':'expense'}" id="saldo-val">${fmt(saldo)}</div></div>
+    <div class="fin-stat"><div class="fin-label">Total Ingresos</div><div class="fin-val income" id="ing-val">${fmt(ingresos)}</div></div>
+    <div class="fin-stat"><div class="fin-label">Total Egresos</div><div class="fin-val expense" id="egr-val">${fmt(egresos)}</div></div>
+  </div>
+  <div class="card"><div class="card-header"><h2 class="card-title">Registro de Transacciones</h2><span class="badge b-slate" id="cnt-mov">—</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Descripción</th><th>Categoría</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th style="text-align:right;">Monto</th><th style="width:50px;"></th></tr></thead><tbody id="tb-movs"></tbody></table></div></div>`;
+}
+function postRenderSCaja(){ renderTablaMov(); }
+function renderTablaMov(){
+  const q=($('srch-mov')||{value:''}).value.toLowerCase();
+  const tipo=($('fil-tipo-m')||{value:''}).value;
+  let movs=DB.get('movimientos');
+  if(tipo) movs=movs.filter(m=>m.tipo===tipo);
+  if(q)    movs=movs.filter(m=>m.desc.toLowerCase().includes(q)||(m.cat||'').toLowerCase().includes(q));
+  movs.sort((a,b)=>b.id-a.id);
+  const tb=$('tb-movs'),cnt=$('cnt-mov');
+  if(cnt) cnt.textContent=`${movs.length} registro${movs.length!==1?'s':''}`;
+  if(!tb) return;
+  tb.innerHTML=movs.length?movs.map(m=>`<tr>
+    <td style="font-size:.8125rem;font-weight:500;max-width:220px;">${m.desc}</td>
+    <td><span style="font-size:.6875rem;font-weight:600;color:var(--text-muted);text-transform:capitalize;">${(m.cat||'general').replace('_',' ')}</span></td>
+    <td class="td-m" style="white-space:nowrap;">${fmtD(m.fecha)}</td>
+    <td>${tipoBadge(m.tipo)}</td>
+    <td>${estadoBadge(m.estado)}</td>
+    <td style="text-align:right;font-weight:600;white-space:nowrap;" class="${m.tipo==='ingreso'?'mon-in':'mon-out'}">${m.tipo==='ingreso'?'+':'−'} ${fmt(m.monto)}</td>
+    <td style="text-align:right;"><button class="btn btn-icon btn-sm" style="color:var(--text-muted);" onclick="eliminarMov(${m.id})" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></td>
+  </tr>`).join(''):emptyRow('Sin movimientos de caja');
+}
+
+function abrirCaja(tipo){
+  $('mc-tipo').value=tipo;
+  const isIng=tipo==='ingreso';
+  const ind=$('mc-ind');
+  $('mc-title').textContent=isIng?'Registrar Ingreso':'Registrar Egreso';
+  if(ind){
+    ind.style.background=isIng?'var(--income-light)':'var(--expense-light)';
+    ind.style.borderColor=isIng?'#bbf7d0':'#fecaca';
+  }
+  $('mc-ind-text').textContent=isIng?'Registrando INGRESO de fondos':'Registrando EGRESO de fondos';
+  $('mc-ind-text').style.color=isIng?'var(--income)':'var(--expense)';
+  $('mc-ind-icon').style.color=isIng?'var(--income)':'var(--expense)';
+  $('mc-desc').value=''; $('mc-monto').value='';
+  $('mc-fecha').value=new Date().toISOString().split('T')[0];
+  openModal('modal-caja');
+}
+function guardarMovimiento(){
+  const tipo=$('mc-tipo').value;
+  const desc=$('mc-desc').value.trim();
+  const monto=parseFloat($('mc-monto').value);
+  if(!desc||!monto||monto<=0){ Toast.warn('Campos incompletos','Completá descripción y monto.'); return; }
+  const movs=DB.get('movimientos');
+  const nuevo={id:DB.nextId('movimientos'),tipo,monto,desc,cat:$('mc-cat').value,fecha:$('mc-fecha').value,estado:$('mc-estado').value,user_id:session.id};
+  movs.unshift(nuevo);
+  DB.set('movimientos',movs);
+  closeModal('modal-caja');
+  // Actualizar saldos en tiempo real
+  const total=movs;
+  const ing=total.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+m.monto,0);
+  const egr=total.filter(m=>m.tipo==='egreso').reduce((s,m)=>s+m.monto,0);
+  const sal=ing-egr;
+  if($('saldo-val')){ $('saldo-val').textContent=fmt(sal); $('saldo-val').className=`fin-val ${sal>=0?'income':'expense'}`; }
+  if($('ing-val'))  $('ing-val').textContent=fmt(ing);
+  if($('egr-val'))  $('egr-val').textContent=fmt(egr);
+  renderTablaMov();
+  if(tipo==='ingreso') Toast.ok('Ingreso registrado',`+${fmt(monto)} — ${desc}`);
+  else                 Toast.err('Egreso registrado',`−${fmt(monto)} — ${desc}`);
+}
+function eliminarMov(id){
+  if(!confirm('¿Eliminar este movimiento? El saldo se recalculará.')) return;
+  DB.set('movimientos',DB.get('movimientos').filter(m=>m.id!==id));
+  const movs=DB.get('movimientos');
+  const ing=movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+m.monto,0);
+  const egr=movs.filter(m=>m.tipo==='egreso').reduce((s,m)=>s+m.monto,0);
+  const sal=ing-egr;
+  if($('saldo-val')){ $('saldo-val').textContent=fmt(sal); $('saldo-val').className=`fin-val ${sal>=0?'income':'expense'}`; }
+  if($('ing-val'))   $('ing-val').textContent=fmt(ing);
+  if($('egr-val'))   $('egr-val').textContent=fmt(egr);
+  renderTablaMov();
+  Toast.ok('Movimiento eliminado','El saldo fue actualizado.');
+}
+
+// ─── MODAL LG para algunos formularios ───────────────────────
+// (El modal-form ya tiene max-width, no necesita clase extra)
+
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Agenda — Lexis Studio{% endblock %}
+{% block page_title %}Mi Agenda{% endblock %}
+{% block page_subtitle %}Audiencias y reuniones personales{% endblock %}
+
+{% block header_actions %}
+<select class="form-control" id="filtro-tipo" onchange="filtrarAgenda()" style="width:auto;padding:0.4rem 1.5rem 0.4rem 0.6rem;">
+  <option value="">Todos los tipos</option>
+  <option value="audiencia">Audiencias</option>
+  <option value="reunion">Reuniones</option>
+  <option value="recepcion">Recepciones</option>
+</select>
+<button class="btn btn-primary" onclick="Modal.open('modal-nueva-audiencia')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nueva Entrada
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Tabla de audiencias -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Agenda de Audiencias y Reuniones</h2>
+    <span class="badge badge-blue" id="contador-agenda" style="font-size:0.75rem;">Cargando...</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Evento</th>
+          <th>Expediente</th>
+          <th>Fecha y Hora</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Descripción</th>
+          <th style="width:100px;text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-agenda"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Nueva Audiencia -->
+<div class="modal-overlay" id="modal-nueva-audiencia">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Nueva Entrada de Agenda</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nueva-audiencia')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-audiencia">
+        <div class="form-group">
+          <label class="form-label">Título del evento *</label>
+          <input class="form-control" name="titulo" placeholder="Ej: Audiencia de Vista de Causa" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-control" name="tipo">
+              <option value="audiencia">Audiencia</option>
+              <option value="reunion">Reunión</option>
+              <option value="recepcion">Recepción</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha y Hora *</label>
+          <input class="form-control" name="fecha_hora" type="datetime-local" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expediente relacionado (opcional)</label>
+          <select class="form-control" name="caso_id">
+            <option value="">— Sin expediente —</option>
+            {% for c in casos_lista %}
+            <option value="{{ c.id }}">{{ c.expediente }} — {{ c.titulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción / Lugar</label>
+          <textarea class="form-control" name="descripcion" placeholder="Sala, juzgado, institución..." rows="2"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nueva-audiencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearAudiencia()" id="btn-crear-aud">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modal-editar-aud">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Editar Entrada</h3>
+      <button class="modal-close" onclick="Modal.close('modal-editar-aud')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-aud-id">
+      <form id="form-editar-aud">
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <input class="form-control" name="titulo" id="edit-aud-titulo" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-control" name="tipo" id="edit-aud-tipo">
+              <option value="audiencia">Audiencia</option>
+              <option value="reunion">Reunión</option>
+              <option value="recepcion">Recepción</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado" id="edit-aud-estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="cancelada">Cancelada</option>
+              <option value="realizada">Realizada</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha y Hora</label>
+          <input class="form-control" type="datetime-local" id="edit-aud-fecha" name="fecha_hora">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" id="edit-aud-desc" name="descripcion" rows="2"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-editar-aud')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicionAud()" id="btn-guardar-aud">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let audData = [];
+
+async function cargarAgenda() {
+  try {
+    audData = await Api.audiencias.list();
+    renderAgenda(audData);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function filtrarAgenda() {
+  const tipo = document.getElementById('filtro-tipo').value;
+  const filtrados = tipo ? audData.filter(a => a.tipo === tipo) : audData;
+  renderAgenda(filtrados);
+}
+
+function renderAgenda(items) {
+  const tbody = document.getElementById('tbody-agenda');
+  const contador = document.getElementById('contador-agenda');
+  contador.textContent = `${items.length} evento${items.length !== 1 ? 's' : ''}`;
+
+  if (!items.length) {
+    tbody.innerHTML = emptyStateHTML('Sin entradas en la agenda');
+    return;
+  }
+
+  tbody.innerHTML = items.map(a => `
+    <tr>
+      <td style="font-weight:500;font-size:0.8125rem;">${a.titulo}</td>
+      <td class="td-muted">${a.expediente || '—'}</td>
+      <td class="td-muted" style="white-space:nowrap;">${formatDateTime(a.fecha_hora)}</td>
+      <td>${tipoBadge(a.tipo)}</td>
+      <td>${estadoBadge(a.estado)}</td>
+      <td class="td-muted" style="max-width:160px;font-size:0.75rem;">${a.descripcion || '—'}</td>
+      <td style="text-align:right;">
+        <div class="d-flex items-center justify-end gap-1">
+          <button class="btn btn-icon" onclick="abrirEdicion(${a.id})" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-icon" style="color:var(--color-expense-garnet);" onclick="eliminarAud(${a.id})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function crearAudiencia() {
+  const btn = document.getElementById('btn-crear-aud');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+  const data = getFormData('form-audiencia');
+  if (!data.caso_id) data.caso_id = null;
+
+  try {
+    const resp = await Api.audiencias.create(data);
+    audData.unshift(resp.audiencia);
+    renderAgenda(audData);
+    Modal.close('modal-nueva-audiencia');
+    resetForm('form-audiencia');
+    Toast.success('Entrada creada', resp.audiencia.titulo);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+function abrirEdicion(id) {
+  const a = audData.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('edit-aud-id').value = a.id;
+  document.getElementById('edit-aud-titulo').value = a.titulo;
+  document.getElementById('edit-aud-tipo').value = a.tipo;
+  document.getElementById('edit-aud-estado').value = a.estado;
+  document.getElementById('edit-aud-fecha').value = a.fecha_hora.replace(' ', 'T').slice(0, 16);
+  document.getElementById('edit-aud-desc').value = a.descripcion || '';
+  Modal.open('modal-editar-aud');
+}
+
+async function guardarEdicionAud() {
+  const id = document.getElementById('edit-aud-id').value;
+  const data = {
+    titulo:     document.getElementById('edit-aud-titulo').value,
+    tipo:       document.getElementById('edit-aud-tipo').value,
+    estado:     document.getElementById('edit-aud-estado').value,
+    fecha_hora: document.getElementById('edit-aud-fecha').value.replace('T', ' '),
+    descripcion: document.getElementById('edit-aud-desc').value,
+  };
+
+  try {
+    await Api.audiencias.update(id, data);
+    const idx = audData.findIndex(a => a.id == id);
+    if (idx !== -1) Object.assign(audData[idx], data);
+    renderAgenda(audData);
+    Modal.close('modal-editar-aud');
+    Toast.success('Entrada actualizada', data.titulo);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function eliminarAud(id) {
+  if (!confirm('¿Eliminar esta entrada de la agenda?')) return;
+  try {
+    await Api.audiencias.delete(id);
+    audData = audData.filter(a => a.id !== id);
+    renderAgenda(audData);
+    Toast.success('Entrada eliminada', 'La entrada fue removida de la agenda.');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarAgenda);
+</script>
+{% endblock %}

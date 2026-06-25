@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Casos — Lexis Studio{% endblock %}
+{% block page_title %}Mis Casos{% endblock %}
+{% block page_subtitle %}Expedientes asignados con notas estratégicas{% endblock %}
+
+{% block header_actions %}
+<div class="search-input-wrapper" style="min-width:240px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <input type="text" class="search-input" id="search-casos" placeholder="Buscar expediente..." oninput="filtrarCasos(this.value)">
+</div>
+<button class="btn btn-primary" onclick="Modal.open('modal-nuevo-caso')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nuevo Caso
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div id="lista-casos"></div>
+
+<!-- Modal Nuevo Caso -->
+<div class="modal-overlay" id="modal-nuevo-caso">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Expediente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-caso')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-nuevo-caso">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nº de Expediente *</label>
+            <input class="form-control" name="expediente" placeholder="EXP-2026-000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado">
+              <option value="activo">Activo</option>
+              <option value="en_curso">En Curso</option>
+              <option value="cerrado">Cerrado</option>
+              <option value="archivado">Archivado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Título de la causa *</label>
+          <input class="form-control" name="titulo" placeholder="Ej: García vs. Municipalidad de..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cliente *</label>
+          <select class="form-control" name="cliente_id" required>
+            <option value="">— Seleccionar cliente —</option>
+            {% for c in clientes %}
+            <option value="{{ c.id }}">{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" name="descripcion" placeholder="Breve descripción del caso..." rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota Estratégica (privada)</label>
+          <textarea class="form-control" name="nota_estrategica" placeholder="Estrategia, riesgos, próximos pasos..." rows="3"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-caso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearCaso()" id="btn-crear-caso">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar Expediente
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let casosData = [];
+
+async function cargarCasos() {
+  try {
+    casosData = await Api.casos.list();
+    renderCasos(casosData);
+  } catch (err) {
+    Toast.error('Error al cargar casos', err.message);
+  }
+}
+
+function renderCasos(casos) {
+  const container = document.getElementById('lista-casos');
+  if (!casos.length) {
+    container.innerHTML = `<div class="empty-state" style="padding:4rem 2rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin:0 auto 1rem;display:block;opacity:0.3;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <div class="empty-state-title">Sin expedientes</div>
+      <div class="empty-state-desc">Creá tu primer expediente con el botón de arriba.</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = casos.map(c => `
+    <div class="caso-card" id="caso-card-${c.id}">
+      <div class="caso-card-header">
+        <div>
+          <div class="caso-expediente">${c.expediente}</div>
+          <div class="caso-titulo">${c.titulo}</div>
+          <div style="margin-top:0.375rem;font-size:0.75rem;color:var(--color-text-muted);">${c.cliente_nombre}</div>
+        </div>
+        <div class="d-flex items-center gap-3">
+          ${estadoBadge(c.estado)}
+          <button class="btn btn-icon" onclick="editarEstado(${c.id}, '${c.estado}')" title="Cambiar estado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-icon" onclick="eliminarCaso(${c.id})" title="Eliminar" style="color:var(--color-expense-garnet);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+          <span class="expand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="caso-body">
+        <div style="font-size:0.8125rem;color:var(--color-text-secondary);margin-bottom:0.875rem;">
+          <strong>Descripción:</strong> ${c.descripcion || '<em style="color:var(--color-text-muted)">Sin descripción</em>'}
+        </div>
+        <div class="nota-estrategica">
+          <label>⚖ Nota Estratégica (privada del abogado)</label>
+          <textarea id="nota-${c.id}" rows="3" placeholder="Estrategia, riesgos, próximos pasos...">${c.nota_estrategica || ''}</textarea>
+          <div style="margin-top:0.5rem;text-align:right;">
+            <button class="btn btn-sm" style="background:rgba(59,125,216,0.2);color:#93c5fd;border:1px solid rgba(59,125,216,0.3);" onclick="guardarNota(${c.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+              Guardar Nota
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filtrarCasos(q) {
+  const query = q.toLowerCase();
+  const filtrados = casosData.filter(c =>
+    c.expediente.toLowerCase().includes(query) ||
+    c.titulo.toLowerCase().includes(query) ||
+    (c.cliente_nombre || '').toLowerCase().includes(query)
+  );
+  renderCasos(filtrados);
+}
+
+async function crearCaso() {
+  const btn = document.getElementById('btn-crear-caso');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  const data = getFormData('form-nuevo-caso');
+  // Asignar abogado actual (el servidor lo infiere del session, pero enviamos el del form)
+  data.abogado_id = null; // Será el del usuario actual por defecto
+
+  try {
+    // Obtener ID del abogado actual desde la sesión (no expuesta directamente)
+    // El servidor lo asignará en base al usuario logueado si no se especifica
+    const resp = await Api.casos.create(data);
+    casosData.unshift(resp.caso);
+    renderCasos(casosData);
+    Modal.close('modal-nuevo-caso');
+    resetForm('form-nuevo-caso');
+    Toast.success('Expediente creado', `${resp.caso.expediente} — ${resp.caso.titulo}`);
+  } catch (err) {
+    Toast.error('Error al crear caso', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+async function guardarNota(id) {
+  const nota = document.getElementById(`nota-${id}`).value;
+  try {
+    await Api.casos.update(id, { nota_estrategica: nota });
+    // Actualizar en datos locales
+    const idx = casosData.findIndex(c => c.id === id);
+    if (idx !== -1) casosData[idx].nota_estrategica = nota;
+    Toast.success('Nota guardada', 'La nota estratégica fue actualizada.');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function editarEstado(id, estadoActual) {
+  const estados = ['activo', 'en_curso', 'cerrado', 'archivado'];
+  const idx = estados.indexOf(estadoActual);
+  const nuevo = estados[(idx + 1) % estados.length];
+
+  try {
+    await Api.casos.update(id, { estado: nuevo });
+    const cIdx = casosData.findIndex(c => c.id === id);
+    if (cIdx !== -1) casosData[cIdx].estado = nuevo;
+    renderCasos(casosData);
+    Toast.info('Estado actualizado', `Expediente marcado como: ${nuevo.replace('_',' ')}`);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function eliminarCaso(id) {
+  if (!confirm('¿Eliminar este expediente? Esta acción no se puede deshacer.')) return;
+  try {
+    await Api.casos.delete(id);
+    casosData = casosData.filter(c => c.id !== id);
+    renderCasos(casosData);
+    Toast.success('Expediente eliminado', 'El caso fue removido del sistema.');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+// Manejar abogado_id: leer desde un endpoint o desde el DOM
+async function inicializar() {
+  // Cargar abogados para asignar al nuevo caso
+  try {
+    const abogados = await Api.usuarios.abogados();
+    // Para el abogado logueado, obtener su propio ID
+    // Agregamos el campo hidden al form
+    const casosList = await Api.get('/casos/lista');
+  } catch {}
+  await cargarCasos();
+}
+
+document.addEventListener('DOMContentLoaded', inicializar);
+</script>
+{% endblock %}

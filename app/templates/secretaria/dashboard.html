@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Diario — Lexis Studio{% endblock %}
+{% block page_title %}Dashboard Diario{% endblock %}
+{% block page_subtitle %}Operaciones del día y tareas del estudio{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="Modal.open('modal-nueva-tarea')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nueva Tarea
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- KPIs -->
+<div class="bento-grid mb-6">
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Casos Activos</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value">{{ casos_activos }}</div>
+      <div class="kpi-meta">en el estudio</div>
+    </div>
+  </div>
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Tareas Pendientes</div>
+        <div class="kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-tareas-pend">{{ tareas_pendientes }}</div>
+      <div class="kpi-meta">por completar</div>
+    </div>
+  </div>
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Recepciones Hoy</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value">{{ recepciones_hoy | length }}</div>
+      <div class="kpi-meta">visitas programadas</div>
+    </div>
+  </div>
+  <div class="bento-col-3">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Saldo de Caja</div>
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value income" id="kpi-saldo-dash">—</div>
+      <div class="kpi-meta">saldo actual en caja</div>
+    </div>
+  </div>
+</div>
+
+<!-- Segunda fila: Tareas + Sala de Espera -->
+<div class="bento-grid">
+
+  <!-- Checklist de Tareas -->
+  <div class="bento-col-6">
+    <div class="card" style="height:100%;">
+      <div class="card-header">
+        <h2 class="card-title">Checklist de Tareas</h2>
+        <span class="badge badge-amber" id="tareas-badge">{{ tareas_pendientes }} pendientes</span>
+      </div>
+      <div class="card-body-sm" id="lista-tareas">
+
+        {% for t in tareas %}
+        <div class="task-item {% if t.completada %}completed{% endif %}" id="tarea-row-{{ t.id }}">
+          <input type="checkbox"
+            class="task-checkbox"
+            id="chk-{{ t.id }}"
+            {% if t.completada %}checked{% endif %}
+            onchange="toggleTarea({{ t.id }}, this.checked)"
+          >
+          <div style="flex:1;">
+            <div class="task-text">{{ t.descripcion }}</div>
+            <div class="task-meta d-flex items-center gap-2" style="margin-top:0.2rem;">
+              <span class="text-xs priority-{{ t.prioridad }}">{{ t.prioridad | capitalize }}</span>
+              {% if t.fecha_limite %}
+              <span>· {{ t.fecha_limite }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <button class="btn btn-icon btn-sm" onclick="eliminarTarea({{ t.id }})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          </button>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <div class="empty-state-title">Sin tareas</div>
+          <div class="empty-state-desc">¡Todo al día!</div>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Sala de Espera / Recepciones del día -->
+  <div class="bento-col-6">
+    <div class="card" style="height:100%;">
+      <div class="card-header">
+        <h2 class="card-title">Sala de Espera — Hoy</h2>
+        <a href="{{ url_for('secretaria.agenda') }}" class="btn btn-secondary btn-sm">Ver agenda</a>
+      </div>
+      <div class="card-body-sm">
+        {% for r in recepciones_hoy %}
+        <div class="wait-room-item">
+          <div class="wait-avatar">{{ r.titulo[0] | upper }}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:0.8125rem;">{{ r.titulo }}</div>
+            <div style="font-size:0.75rem;color:var(--color-text-muted);">{{ r.fecha_hora }}</div>
+            {% if r.descripcion %}
+            <div style="font-size:0.75rem;color:var(--color-text-secondary);margin-top:0.125rem;">{{ r.descripcion }}</div>
+            {% endif %}
+          </div>
+          <span class="badge badge-{{ r.estado }}">{{ r.estado | capitalize }}</span>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <div class="empty-state-title">Sin recepciones hoy</div>
+          <div class="empty-state-desc">No hay visitas programadas para el día de hoy.</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Nueva Tarea -->
+<div class="modal-overlay" id="modal-nueva-tarea">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Nueva Tarea</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nueva-tarea')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-nueva-tarea">
+        <div class="form-group">
+          <label class="form-label">Descripción de la tarea *</label>
+          <input class="form-control" name="descripcion" placeholder="Ej: Preparar escrito de contestación..." required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prioridad</label>
+            <select class="form-control" name="prioridad">
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha límite</label>
+            <input class="form-control" type="date" name="fecha_limite">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nueva-tarea')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearTarea()" id="btn-crear-tarea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar Tarea
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Helper server-side para badge (usado en Jinja2)
+// En el cliente usamos la función prioridadBadge de ui.js
+
+async function toggleTarea(id, completada) {
+  const row = document.getElementById(`tarea-row-${id}`);
+  try {
+    await Api.tareas.update(id, { completada: completada ? 1 : 0 });
+    if (row) {
+      row.classList.toggle('completed', completada);
+    }
+    actualizarContadorTareas();
+    Toast.success(
+      completada ? 'Tarea completada' : 'Tarea reabierta',
+      completada ? '¡Bien hecho!' : 'La tarea fue marcada como pendiente.'
+    );
+  } catch (err) {
+    Toast.error('Error', err.message);
+    // Revertir checkbox
+    const chk = document.getElementById(`chk-${id}`);
+    if (chk) chk.checked = !completada;
+  }
+}
+
+async function eliminarTarea(id) {
+  try {
+    await Api.tareas.delete(id);
+    const row = document.getElementById(`tarea-row-${id}`);
+    if (row) row.remove();
+    actualizarContadorTareas();
+    Toast.success('Tarea eliminada');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function actualizarContadorTareas() {
+  const pend = document.querySelectorAll('.task-item:not(.completed)').length;
+  const badge = document.getElementById('tareas-badge');
+  const kpi   = document.getElementById('kpi-tareas-pend');
+  if (badge) badge.textContent = `${pend} pendiente${pend !== 1 ? 's' : ''}`;
+  if (kpi)   kpi.textContent  = pend;
+}
+
+async function crearTarea() {
+  const btn = document.getElementById('btn-crear-tarea');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  const data = getFormData('form-nueva-tarea');
+  try {
+    const resp = await Api.tareas.create(data);
+    const t = resp.tarea;
+
+    // Insertar tarea en el DOM
+    const lista = document.getElementById('lista-tareas');
+    // Remover empty state si existe
+    const emptyEl = lista.querySelector('.empty-state');
+    if (emptyEl) emptyEl.remove();
+
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.id = `tarea-row-${t.id}`;
+    div.innerHTML = `
+      <input type="checkbox" class="task-checkbox" id="chk-${t.id}" onchange="toggleTarea(${t.id}, this.checked)">
+      <div style="flex:1;">
+        <div class="task-text">${t.descripcion}</div>
+        <div class="task-meta d-flex items-center gap-2" style="margin-top:0.2rem;">
+          ${prioridadBadge(t.prioridad)}
+          ${t.fecha_limite ? `<span>· ${t.fecha_limite}</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-icon btn-sm" onclick="eliminarTarea(${t.id})" title="Eliminar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+      </button>
+    `;
+    lista.appendChild(div);
+
+    Modal.close('modal-nueva-tarea');
+    resetForm('form-nueva-tarea');
+    actualizarContadorTareas();
+    Toast.success('Tarea creada', t.descripcion);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+// KPI Saldo
+async function cargarSaldo() {
+  try {
+    const stats = await Api.dashboard.stats();
+    document.getElementById('kpi-saldo-dash').textContent = formatMoney(stats.saldo_caja);
+  } catch {}
+}
+
+document.addEventListener('DOMContentLoaded', cargarSaldo);
+</script>
+{% endblock %}

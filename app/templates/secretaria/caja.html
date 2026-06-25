@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Caja / Gestión Financiera — Lexis Studio{% endblock %}
+{% block page_title %}Caja y Gestión Financiera{% endblock %}
+{% block page_subtitle %}Control de movimientos, saldo y transacciones del estudio{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-success" onclick="abrirModalMovimiento('ingreso')" id="btn-ingreso">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+  Registrar Ingreso
+</button>
+<button class="btn btn-danger" onclick="abrirModalMovimiento('egreso')" id="btn-egreso">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+  Registrar Egreso
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Summary financiero -->
+<div class="financial-summary mb-6">
+  <div class="financial-stat">
+    <div class="financial-stat-label">Saldo Actual</div>
+    <div class="financial-stat-value {% if saldo >= 0 %}income{% else %}expense{% endif %}" id="saldo-total">
+      {{ "${:,.2f}".format(saldo) }}
+    </div>
+  </div>
+  <div class="financial-stat">
+    <div class="financial-stat-label">Total Ingresos</div>
+    <div class="financial-stat-value income" id="total-ingresos">{{ "${:,.2f}".format(ingresos) }}</div>
+  </div>
+  <div class="financial-stat">
+    <div class="financial-stat-label">Total Egresos</div>
+    <div class="financial-stat-value expense" id="total-egresos">{{ "${:,.2f}".format(egresos) }}</div>
+  </div>
+</div>
+
+<!-- Tabla de Movimientos -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Registro de Transacciones</h2>
+    <div class="d-flex gap-2 items-center">
+      <div class="search-input-wrapper" style="min-width:200px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="search-mov" placeholder="Buscar transacción..." oninput="filtrarMovimientos(this.value)">
+      </div>
+      <select id="filtro-tipo-mov" class="form-control" style="width:auto;" onchange="filtrarMovimientos('')">
+        <option value="">Todos</option>
+        <option value="ingreso">Ingresos</option>
+        <option value="egreso">Egresos</option>
+      </select>
+      <span class="badge badge-slate" id="total-mov-count">—</span>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Categoría</th>
+          <th>Fecha</th>
+          <th>Registrado por</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th style="text-align:right;">Monto</th>
+          <th style="text-align:right;width:60px;"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody-movimientos"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Registrar Movimiento -->
+<div class="modal-overlay" id="modal-movimiento">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-mov-title">Registrar Movimiento</h3>
+      <button class="modal-close" onclick="Modal.close('modal-movimiento')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mov-tipo-hidden" value="ingreso">
+
+      <!-- Indicator de tipo -->
+      <div id="tipo-indicator" style="display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.875rem;border-radius:var(--radius-sm);margin-bottom:1rem;background:var(--color-income-light);border:1px solid #bbf7d0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--color-income-green);"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        <span id="tipo-indicator-text" style="font-size:0.8125rem;font-weight:600;color:var(--color-income-green);">Registrando INGRESO de fondos</span>
+      </div>
+
+      <form id="form-movimiento">
+        <div class="form-group">
+          <label class="form-label">Descripción *</label>
+          <input class="form-control" name="descripcion" id="mov-desc" placeholder="Ej: Honorarios — Exp. 2024-001" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Monto (ARS) *</label>
+            <input class="form-control" name="monto" id="mov-monto" type="number" min="0.01" step="0.01" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input class="form-control" name="fecha" id="mov-fecha" type="date">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <select class="form-control" name="categoria" id="mov-cat">
+              <option value="honorarios">Honorarios</option>
+              <option value="consultas">Consultas</option>
+              <option value="gastos_judic">Gastos Judiciales</option>
+              <option value="peritos">Peritos</option>
+              <option value="admin">Administración</option>
+              <option value="alquiler">Alquiler</option>
+              <option value="servicios">Servicios</option>
+              <option value="general">General</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado" id="mov-estado">
+              <option value="completado">Completed</option>
+              <option value="procesando">Processing</option>
+              <option value="fallido">Failed</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-movimiento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="registrarMovimiento()" id="btn-registrar-mov">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Confirmar Registro
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let movData = [];
+let movDataFull = [];
+
+// Inicializar fecha del modal a hoy
+function setFechaHoy() {
+  const today = new Date().toISOString().split('T')[0];
+  const fechaEl = document.getElementById('mov-fecha');
+  if (fechaEl) fechaEl.value = today;
+}
+
+function abrirModalMovimiento(tipo) {
+  document.getElementById('mov-tipo-hidden').value = tipo;
+  const isIngreso = tipo === 'ingreso';
+
+  // Indicator
+  const indicator = document.getElementById('tipo-indicator');
+  const indicatorText = document.getElementById('tipo-indicator-text');
+  const title = document.getElementById('modal-mov-title');
+
+  if (isIngreso) {
+    indicator.style.background = 'var(--color-income-light)';
+    indicator.style.borderColor = '#bbf7d0';
+    indicator.querySelector('svg').style.color = 'var(--color-income-green)';
+    indicator.querySelector('polyline').setAttribute('points', '23 6 13.5 15.5 8.5 10.5 1 18');
+    indicatorText.style.color = 'var(--color-income-green)';
+    indicatorText.textContent = 'Registrando INGRESO de fondos';
+    title.textContent = 'Registrar Ingreso';
+  } else {
+    indicator.style.background = 'var(--color-expense-light)';
+    indicator.style.borderColor = '#fecaca';
+    indicator.querySelector('svg').style.color = 'var(--color-expense-garnet)';
+    indicator.querySelector('polyline').setAttribute('points', '23 18 13.5 8.5 8.5 13.5 1 6');
+    indicatorText.style.color = 'var(--color-expense-garnet)';
+    indicatorText.textContent = 'Registrando EGRESO de fondos';
+    title.textContent = 'Registrar Egreso';
+  }
+
+  setFechaHoy();
+  resetForm('form-movimiento');
+  setFechaHoy();
+  Modal.open('modal-movimiento');
+}
+
+async function cargarMovimientos() {
+  try {
+    movDataFull = await Api.movimientos.list();
+    movData = [...movDataFull];
+    renderMovimientos(movData);
+    recalcularSummary(movDataFull);
+  } catch (err) {
+    Toast.error('Error al cargar movimientos', err.message);
+  }
+}
+
+function filtrarMovimientos(q) {
+  const query = q || document.getElementById('search-mov').value;
+  const tipo  = document.getElementById('filtro-tipo-mov').value;
+
+  let f = movDataFull;
+  if (tipo)  f = f.filter(m => m.tipo === tipo);
+  if (query) f = f.filter(m =>
+    m.descripcion.toLowerCase().includes(query.toLowerCase()) ||
+    (m.categoria||'').toLowerCase().includes(query.toLowerCase()) ||
+    (m.usuario_nombre||'').toLowerCase().includes(query.toLowerCase())
+  );
+  movData = f;
+  renderMovimientos(f);
+}
+
+function renderMovimientos(items) {
+  const tbody = document.getElementById('tbody-movimientos');
+  const count = document.getElementById('total-mov-count');
+  count.textContent = `${items.length} registro${items.length !== 1 ? 's' : ''}`;
+
+  if (!items.length) {
+    tbody.innerHTML = emptyStateHTML('Sin movimientos de caja');
+    return;
+  }
+
+  tbody.innerHTML = items.map(m => `
+    <tr>
+      <td style="font-size:0.8125rem;font-weight:500;max-width:220px;">${m.descripcion}</td>
+      <td>
+        <span style="font-size:0.6875rem;font-weight:600;color:var(--color-text-muted);text-transform:capitalize;letter-spacing:0.04em;">${(m.categoria||'general').replace('_',' ')}</span>
+      </td>
+      <td class="td-muted" style="white-space:nowrap;">${formatDate(m.fecha)}</td>
+      <td class="td-muted" style="font-size:0.75rem;">${m.usuario_nombre || '—'}</td>
+      <td>${tipoBadge(m.tipo)}</td>
+      <td>${estadoBadge(m.estado)}</td>
+      <td style="text-align:right;font-weight:600;white-space:nowrap;" class="${m.tipo === 'ingreso' ? 'monto-ingreso' : 'monto-egreso'}">
+        ${m.tipo === 'ingreso' ? '+' : '−'} ${formatMoney(m.monto)}
+      </td>
+      <td style="text-align:right;">
+        <button class="btn btn-icon btn-sm" style="color:var(--color-text-muted);" onclick="eliminarMovimiento(${m.id})" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function recalcularSummary(items) {
+  const ingresos = items.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + m.monto, 0);
+  const egresos  = items.filter(m => m.tipo === 'egreso').reduce((s, m) => s + m.monto, 0);
+  const saldo    = ingresos - egresos;
+
+  const saldoEl    = document.getElementById('saldo-total');
+  const ingresosEl = document.getElementById('total-ingresos');
+  const egresosEl  = document.getElementById('total-egresos');
+
+  if (saldoEl) {
+    saldoEl.textContent = formatMoney(saldo);
+    saldoEl.className = `financial-stat-value ${saldo >= 0 ? 'income' : 'expense'}`;
+  }
+  if (ingresosEl) ingresosEl.textContent = formatMoney(ingresos);
+  if (egresosEl)  egresosEl.textContent  = formatMoney(egresos);
+}
+
+async function registrarMovimiento() {
+  const btn = document.getElementById('btn-registrar-mov');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  const tipo = document.getElementById('mov-tipo-hidden').value;
+  const data = {
+    tipo,
+    descripcion: document.getElementById('mov-desc').value,
+    monto:       document.getElementById('mov-monto').value,
+    fecha:       document.getElementById('mov-fecha').value,
+    categoria:   document.getElementById('mov-cat').value,
+    estado:      document.getElementById('mov-estado').value,
+  };
+
+  if (!data.descripcion || !data.monto) {
+    Toast.warning('Campos incompletos', 'Completá descripción y monto.');
+    setBtnLoading(btn, false, orig);
+    return;
+  }
+
+  try {
+    const resp = await Api.movimientos.create(data);
+    movDataFull.unshift(resp.movimiento);
+    filtrarMovimientos('');
+    recalcularSummary(movDataFull);
+    Modal.close('modal-movimiento');
+
+    const montoFmt = formatMoney(resp.movimiento.monto);
+    if (tipo === 'ingreso') {
+      Toast.success('Ingreso registrado', `+${montoFmt} — ${resp.movimiento.descripcion}`);
+    } else {
+      Toast.error('Egreso registrado', `−${montoFmt} — ${resp.movimiento.descripcion}`);
+    }
+  } catch (err) {
+    Toast.error('Error al registrar', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+async function eliminarMovimiento(id) {
+  if (!confirm('¿Eliminar este registro? El saldo se recalculará automáticamente.')) return;
+  try {
+    await Api.movimientos.delete(id);
+    movDataFull = movDataFull.filter(m => m.id !== id);
+    filtrarMovimientos('');
+    recalcularSummary(movDataFull);
+    Toast.success('Movimiento eliminado', 'El saldo fue actualizado.');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarMovimientos);
+</script>
+{% endblock %}

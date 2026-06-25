@@ -1,0 +1,31 @@
+# Archivos ignorados por Git
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de entornos Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.env
+.venv
+venv/
+env/
+
+# Base de datos local
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos locales subidos
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Logs
+*.log
+logs/

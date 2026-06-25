@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Facturación — Lexis Studio{% endblock %}
+{% block page_title %}Facturación{% endblock %}
+{% block page_subtitle %}Control analítico de honorarios, ingresos y egresos del estudio{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" onclick="abrirModalMovimiento()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Registrar Movimiento
+</button>
+<button class="btn btn-secondary" onclick="cargarTodo()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  Actualizar
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="bento-grid mb-6">
+
+  <!-- KPI Ingresos -->
+  <div class="bento-col-4">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Ingresos Totales</div>
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value income" id="kpi-ingresos-total">—</div>
+      <div class="kpi-meta">acumulado (<span id="total-ingresos-count">—</span> cobros)</div>
+    </div>
+  </div>
+
+  <!-- KPI Egresos -->
+  <div class="bento-col-4">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Gastos / Egresos</div>
+        <div class="kpi-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value expense" id="kpi-egresos-total">—</div>
+      <div class="kpi-meta">acumulado (<span id="total-egresos-count">—</span> pagos)</div>
+    </div>
+  </div>
+
+  <!-- KPI Balance -->
+  <div class="bento-col-4">
+    <div class="kpi-card">
+      <div class="d-flex items-center justify-between">
+        <div class="kpi-label">Saldo Neto</div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-saldo-neto">—</div>
+      <div class="kpi-meta">balance disponible en caja</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Movimientos de Caja -->
+<div class="bento-grid">
+  <div class="bento-col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Historial de Caja y Finanzas</h2>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th>Categoría</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th style="text-align:right;">Monto</th>
+              <th style="text-align:right; width:80px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-movimientos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Movimiento -->
+<div class="modal-overlay" id="modal-nuevo-movimiento">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Registrar Movimiento</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-movimiento')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-nuevo-movimiento" onsubmit="event.preventDefault();">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo *</label>
+            <select class="form-control" name="tipo" id="mov-tipo" required>
+              <option value="ingreso">Ingreso (Entrada)</option>
+              <option value="egreso">Egreso (Gasto)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monto ($) *</label>
+            <input class="form-control" type="number" step="0.01" min="0.01" name="monto" id="mov-monto" placeholder="0.00" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción *</label>
+          <input class="form-control" name="descripcion" id="mov-descripcion" placeholder="Ej: Pago de honorarios, Resma de hojas..." required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <input class="form-control" name="categoria" id="mov-categoria" placeholder="Ej: honorarios, librería, servicios...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha *</label>
+            <input class="form-control" type="date" name="fecha" id="mov-fecha" required>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-movimiento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearMovimiento()" id="btn-crear-movimiento">Registrar</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let movData = [];
+
+function abrirModalMovimiento() {
+  resetForm('form-nuevo-movimiento');
+  // Poner fecha de hoy por defecto
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('mov-fecha').value = today;
+  Modal.open('modal-nuevo-movimiento');
+}
+
+async function cargarTodo() {
+  try {
+    movData = await Api.movimientos.list();
+    renderMovimientos(movData);
+    calcularKPIs();
+  } catch (err) {
+    Toast.error('Error al cargar', err.message);
+  }
+}
+
+function calcularKPIs() {
+  const ingresosList = movData.filter(m => m.tipo === 'ingreso');
+  const egresosList  = movData.filter(m => m.tipo === 'egreso');
+  
+  const totalIngresos = ingresosList.reduce((s, m) => s + m.monto, 0);
+  const totalEgresos  = egresosList.reduce((s, m) => s + m.monto, 0);
+  const saldoNeto     = totalIngresos - totalEgresos;
+
+  document.getElementById('kpi-ingresos-total').textContent = formatMoney(totalIngresos);
+  document.getElementById('total-ingresos-count').textContent = ingresosList.length;
+
+  document.getElementById('kpi-egresos-total').textContent = formatMoney(totalEgresos);
+  document.getElementById('total-egresos-count').textContent = egresosList.length;
+
+  const saldoEl = document.getElementById('kpi-saldo-neto');
+  saldoEl.textContent = formatMoney(saldoNeto);
+  
+  // Cambiar color de saldo dependiendo si es positivo o negativo
+  if (saldoNeto >= 0) {
+    saldoEl.className = 'kpi-value income';
+  } else {
+    saldoEl.className = 'kpi-value expense';
+  }
+}
+
+function renderMovimientos(movs) {
+  const tbody = document.getElementById('tbody-movimientos');
+  if (!movs.length) { tbody.innerHTML = emptyStateHTML('Sin movimientos registrados'); return; }
+  tbody.innerHTML = movs.map(m => {
+    const isIngreso = m.tipo === 'ingreso';
+    const color = isIngreso ? 'var(--color-income-green)' : 'var(--color-expense-garnet)';
+    const prefix = isIngreso ? '+' : '-';
+    
+    return `
+      <tr>
+        <td style="font-size:0.8125rem;font-weight:500;">${m.descripcion}</td>
+        <td class="td-muted" style="text-transform:capitalize;">${m.categoria || 'general'}</td>
+        <td class="td-muted">${formatDate(m.fecha)}</td>
+        <td>${tipoBadge(m.tipo)}</td>
+        <td>${estadoBadge(m.estado)}</td>
+        <td style="text-align:right;font-weight:600;color:${color};white-space:nowrap;">
+          ${prefix} ${formatMoney(m.monto)}
+        </td>
+        <td style="text-align:right;">
+          <button class="btn btn-icon btn-sm" style="color:var(--color-expense-garnet);" onclick="eliminarMovimiento(${m.id})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function crearMovimiento() {
+  const form = document.getElementById('form-nuevo-movimiento');
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const payload = getFormData('form-nuevo-movimiento');
+  // Asegurar que monto sea numérico
+  payload.monto = parseFloat(payload.monto);
+  
+  const btn = document.getElementById('btn-crear-movimiento');
+  const orig = btn.innerHTML;
+  setBtnLoading(btn, true);
+
+  try {
+    const resp = await Api.movimientos.create(payload);
+    if (resp.error) {
+      throw new Error(resp.error);
+    }
+    
+    // El backend retorna { success: true, movimiento: {...}, nuevo_saldo: X }
+    movData.unshift(resp.movimiento);
+    renderMovimientos(movData);
+    calcularKPIs();
+    Modal.close('modal-nuevo-movimiento');
+    Toast.success('Movimiento registrado', resp.movimiento.descripcion);
+  } catch (err) {
+    Toast.error('Error al registrar', err.message);
+  } finally {
+    setBtnLoading(btn, false, orig);
+  }
+}
+
+async function eliminarMovimiento(id) {
+  if (!confirmDelete('¿Estás seguro de que deseas eliminar este movimiento financiero?')) {
+    return;
+  }
+  
+  try {
+    const resp = await Api.movimientos.delete(id);
+    if (resp.error) {
+       throw new Error(resp.error);
+    }
+    
+    movData = movData.filter(m => m.id !== id);
+    renderMovimientos(movData);
+    calcularKPIs();
+    Toast.info('Movimiento eliminado', 'El registro de caja ha sido eliminado.');
+  } catch (err) {
+    Toast.error('Error al eliminar', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+{% endblock %}

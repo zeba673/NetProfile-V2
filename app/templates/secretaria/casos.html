@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Casos — Lexis Studio{% endblock %}
+{% block page_title %}Gestión de Casos{% endblock %}
+{% block page_subtitle %}Panel operativo de expedientes del estudio{% endblock %}
+
+{% block header_actions %}
+<div class="search-input-wrapper" style="min-width:220px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <input type="text" class="search-input" id="search-casos-sec" placeholder="Buscar caso..." oninput="filtrarCasosSec(this.value)">
+</div>
+<button class="btn btn-secondary" onclick="Modal.open('modal-nuevo-doc-sec')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+  Cargar Documento
+</button>
+<button class="btn btn-primary" onclick="Modal.open('modal-nuevo-caso-sec')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Nuevo Caso
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Todos los Expedientes</h2>
+    <div class="d-flex gap-2 items-center">
+      <select id="filtro-estado-caso" class="form-control" style="width:auto;" onchange="filtrarCasosSec('')">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="en_curso">En Curso</option>
+        <option value="cerrado">Cerrado</option>
+        <option value="archivado">Archivado</option>
+      </select>
+      <span class="badge badge-blue" id="total-casos-sec">—</span>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Expediente</th>
+          <th>Causa</th>
+          <th>Cliente</th>
+          <th>Abogado</th>
+          <th>Estado</th>
+          <th>Fecha Alta</th>
+          <th style="text-align:right;width:120px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-casos-sec"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Nuevo Caso -->
+<div class="modal-overlay" id="modal-nuevo-caso-sec">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Expediente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-caso-sec')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-nuevo-caso-sec">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nº de Expediente *</label>
+            <input class="form-control" name="expediente" placeholder="EXP-2026-000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado">
+              <option value="activo">Activo</option>
+              <option value="en_curso">En Curso</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Título *</label>
+          <input class="form-control" name="titulo" placeholder="Ej: García vs. Banco Nacional..." required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Cliente *</label>
+            <select class="form-control" name="cliente_id" required>
+              <option value="">— Seleccionar —</option>
+              {% for c in clientes %}
+              <option value="{{ c.id }}">{{ c.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Abogado asignado *</label>
+            <select class="form-control" name="abogado_id" required>
+              <option value="">— Seleccionar —</option>
+              {% for a in abogados %}
+              <option value="{{ a.id }}">{{ a.nombre_completo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" name="descripcion" rows="2"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-caso-sec')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearCasoSec()" id="btn-crear-caso-sec">Guardar Expediente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Caso -->
+<div class="modal-overlay" id="modal-editar-caso-sec">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Editar Expediente</h3>
+      <button class="modal-close" onclick="Modal.close('modal-editar-caso-sec')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eid-caso">
+      <div class="form-group">
+        <label class="form-label">Título</label>
+        <input class="form-control" id="ec-titulo">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="ec-estado">
+            <option value="activo">Activo</option>
+            <option value="en_curso">En Curso</option>
+            <option value="cerrado">Cerrado</option>
+            <option value="archivado">Archivado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Abogado asignado</label>
+          <select class="form-control" id="ec-abogado">
+            {% for a in abogados %}
+            <option value="{{ a.id }}">{{ a.nombre_completo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-control" id="ec-desc" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-editar-caso-sec')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdCasoSec()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cargar Documento Rápido -->
+<div class="modal-overlay" id="modal-nuevo-doc-sec">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:0.375rem;color:var(--color-accent);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Cargar Documento
+      </h3>
+      <button class="modal-close" onclick="Modal.close('modal-nuevo-doc-sec')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-doc-sec">
+        <div class="form-group">
+          <label class="form-label">Nombre del archivo *</label>
+          <input class="form-control" name="nombre_archivo" placeholder="Ej: Escrito_demanda.pdf" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Expediente</label>
+            <select class="form-control" name="caso_id" id="doc-caso-select">
+              <option value="">— Sin expediente —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control" name="estado">
+              <option value="pendiente_escaneo">Pendiente de escaneo</option>
+              <option value="digitalizado">Digitalizado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de documento</label>
+          <input class="form-control" name="tipo_doc" placeholder="Demanda, Pericia, Contrato...">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-nuevo-doc-sec')">Cancelar</button>
+      <button class="btn btn-primary" onclick="cargarDocSec()" id="btn-doc-sec">Cargar Documento</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let casosSecData = [];
+
+async function cargarCasosSec() {
+  try {
+    casosSecData = await Api.casos.list();
+    renderCasosSec(casosSecData);
+    // Poblar select de documentos
+    const select = document.getElementById('doc-caso-select');
+    casosSecData.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.expediente} — ${c.titulo}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function filtrarCasosSec(q) {
+  const query  = q.toLowerCase();
+  const estado = document.getElementById('filtro-estado-caso').value;
+  let f = casosSecData;
+  if (estado) f = f.filter(c => c.estado === estado);
+  if (query)  f = f.filter(c =>
+    c.expediente.toLowerCase().includes(query) ||
+    c.titulo.toLowerCase().includes(query) ||
+    (c.cliente_nombre||'').toLowerCase().includes(query) ||
+    (c.abogado_nombre||'').toLowerCase().includes(query)
+  );
+  renderCasosSec(f);
+}
+
+function renderCasosSec(casos) {
+  const tbody = document.getElementById('tbody-casos-sec');
+  const total = document.getElementById('total-casos-sec');
+  total.textContent = `${casos.length} expediente${casos.length !== 1 ? 's' : ''}`;
+
+  if (!casos.length) { tbody.innerHTML = emptyStateHTML('Sin expedientes'); return; }
+
+  tbody.innerHTML = casos.map(c => `
+    <tr>
+      <td><span style="font-family:var(--font-ui);font-size:0.75rem;font-weight:700;color:var(--color-accent);">${c.expediente}</span></td>
+      <td style="font-weight:500;font-size:0.8125rem;max-width:180px;">${c.titulo}</td>
+      <td class="td-muted">${c.cliente_nombre || '—'}</td>
+      <td class="td-muted">${c.abogado_nombre || '—'}</td>
+      <td>${estadoBadge(c.estado)}</td>
+      <td class="td-muted">${formatDate(c.created_at)}</td>
+      <td style="text-align:right;">
+        <div class="d-flex items-center justify-end gap-1">
+          <button class="btn btn-icon" onclick="abrirEdCasoSec(${c.id})" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-icon" style="color:var(--color-expense-garnet);" onclick="eliminarCasoSec(${c.id})" title="Eliminar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function crearCasoSec() {
+  const data = getFormData('form-nuevo-caso-sec');
+  try {
+    const resp = await Api.casos.create(data);
+    casosSecData.unshift(resp.caso);
+    renderCasosSec(casosSecData);
+    Modal.close('modal-nuevo-caso-sec');
+    resetForm('form-nuevo-caso-sec');
+    Toast.success('Expediente creado', `${resp.caso.expediente}`);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+function abrirEdCasoSec(id) {
+  const c = casosSecData.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('eid-caso').value  = c.id;
+  document.getElementById('ec-titulo').value = c.titulo;
+  document.getElementById('ec-estado').value = c.estado;
+  document.getElementById('ec-desc').value   = c.descripcion || '';
+  const abogadoSel = document.getElementById('ec-abogado');
+  if (abogadoSel) abogadoSel.value = c.abogado_id || '';
+  Modal.open('modal-editar-caso-sec');
+}
+
+async function guardarEdCasoSec() {
+  const id = document.getElementById('eid-caso').value;
+  const data = {
+    titulo:     document.getElementById('ec-titulo').value,
+    estado:     document.getElementById('ec-estado').value,
+    descripcion: document.getElementById('ec-desc').value,
+    abogado_id:  document.getElementById('ec-abogado').value,
+  };
+  try {
+    await Api.casos.update(id, data);
+    const idx = casosSecData.findIndex(c => c.id == id);
+    if (idx !== -1) Object.assign(casosSecData[idx], data);
+    renderCasosSec(casosSecData);
+    Modal.close('modal-editar-caso-sec');
+    Toast.success('Caso actualizado', data.titulo);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function eliminarCasoSec(id) {
+  if (!confirm('¿Eliminar este expediente?')) return;
+  try {
+    await Api.casos.delete(id);
+    casosSecData = casosSecData.filter(c => c.id !== id);
+    renderCasosSec(casosSecData);
+    Toast.success('Expediente eliminado');
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+async function cargarDocSec() {
+  const data = getFormData('form-doc-sec');
+  if (!data.caso_id) data.caso_id = null;
+  try {
+    const resp = await Api.documentos.create(data);
+    Modal.close('modal-nuevo-doc-sec');
+    resetForm('form-doc-sec');
+    Toast.success('Documento cargado', resp.documento.nombre_archivo);
+  } catch (err) {
+    Toast.error('Error', err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarCasosSec);
+</script>
+{% endblock %}
